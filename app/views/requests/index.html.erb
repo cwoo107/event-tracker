@@ -1,0 +1,72 @@
+<% content_for :title, "Requests &middot; USAN Event Liaison Tracker" %>
+
+<div class="max-w-6xl mx-auto px-6 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900">Incoming requests</h1>
+      <p class="text-[13px] text-slate-500 mt-1">
+        <%= pluralize(@requests.size, "event") %> awaiting assignment
+      </p>
+    </div>
+    <%= link_to new_event_path,
+          class: "flex items-center gap-1.5 bg-lime-400 hover:bg-lime-500 text-brand-900 text-[13px] font-semibold px-3.5 py-2 rounded-md" do %>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Add manually
+    <% end %>
+  </div>
+
+  <div class="border border-slate-200 rounded-lg overflow-hidden bg-white">
+    <table class="w-full text-[13px]">
+      <thead>
+        <tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400">
+          <th class="px-3 py-2">Received</th>
+          <th class="px-3 py-2">Event</th>
+          <th class="px-3 py-2">Requester</th>
+          <th class="px-3 py-2">Date</th>
+          <th class="px-3 py-2">Drive</th>
+          <th class="px-3 py-2">Source</th>
+          <th class="px-3 py-2 text-right">Triage</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% @requests.each do |event| %>
+          <tr class="hover:bg-slate-50">
+            <td class="px-3 py-2.5 text-slate-400 whitespace-nowrap"><%= time_ago_in_words(event.created_at) %> ago</td>
+            <td class="px-3 py-2.5">
+              <%= link_to event.title, event_path(event), class: "font-medium text-slate-900 hover:text-brand-700" %>
+              <p class="text-[11px] text-slate-500">
+                <%= event.event_type.humanize %> &middot; <%= event.city %>
+                <%= " &middot; #{event.estimated_attendees} expected".html_safe if event.estimated_attendees.present? %>
+              </p>
+            </td>
+            <td class="px-3 py-2.5">
+              <p class="text-slate-700"><%= event.requester_name %></p>
+              <p class="text-[11px] text-slate-500"><%= event.requester_organization %></p>
+            </td>
+            <td class="px-3 py-2.5 whitespace-nowrap">
+              <%= event.starts_at.strftime("%a, %b %-d") %>
+              <p class="text-[11px] text-slate-500"><%= event.starts_at.strftime("%H:%M") %>&ndash;<%= event.ends_at.strftime("%H:%M") %></p>
+            </td>
+            <td class="px-3 py-2.5 whitespace-nowrap text-slate-500">
+              <%= format_drive_time(event.drive_time_minutes) || "&mdash;".html_safe %>
+            </td>
+            <td class="px-3 py-2.5">
+              <span class="text-[11px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded"><%= event.source.humanize %></span>
+            </td>
+            <td class="px-3 py-2.5 text-right whitespace-nowrap">
+              <div class="flex items-center justify-end gap-2">
+                <%= link_to "Review", candidates_event_path(event),
+                      class: "text-[12px] font-medium text-brand-700 hover:text-brand-800 border border-slate-200 rounded-md px-2.5 py-1.5" %>
+                <%= button_to "Auto-assign", auto_assign_event_path(event), method: :post,
+                      class: "text-[12px] font-semibold text-brand-900 bg-lime-400 hover:bg-lime-500 rounded-md px-2.5 py-1.5 border-0 cursor-pointer" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+        <% if @requests.none? %>
+          <tr><td colspan="7" class="px-3 py-6 text-center text-slate-400">Nothing waiting on triage.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

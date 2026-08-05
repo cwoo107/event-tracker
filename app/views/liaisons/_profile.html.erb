@@ -1,0 +1,110 @@
+<div class="p-6 max-w-4xl">
+  <% if (hold = liaison.active_load_hold) %>
+    <div class="mb-5 rounded-lg bg-lime-50 border-l-2 border-lime-500 px-4 py-3 text-[13px] text-brand-900">
+      Load hold active. The engine won't offer <%= liaison.name.split.first %>
+      <% restrictions = [] %>
+      <% restrictions << "events over #{hold.max_drive_minutes} minutes of drive time" if hold.max_drive_minutes %>
+      <% restrictions << "any weekend date" if hold.block_weekends? %>
+      <%= restrictions.join(" or ") %> until <%= hold.ends_on.strftime("%b %-d") %>.
+    </div>
+  <% end %>
+
+  <div class="flex items-start justify-between mb-6">
+    <div class="flex items-center gap-4">
+      <div class="w-14 h-14 rounded-full flex items-center justify-center text-white text-[16px] font-semibold flex-none"
+           style="background: <%= liaison.color %>">
+        <%= liaison.initials %>
+      </div>
+      <div>
+        <h1 class="text-lg font-semibold text-slate-900"><%= liaison.name %></h1>
+        <p class="text-[13px] text-slate-500">
+          Marketing &amp; Education Liaison
+          <%= " &middot; based #{liaison.home_city}".html_safe if liaison.home_city.present? %>
+        </p>
+        <% if liaison.skills.any? %>
+          <div class="flex gap-1.5 mt-2 flex-wrap">
+            <% liaison.skills.each do |skill| %>
+              <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded uppercase tracking-wide"><%= skill %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    <div class="text-right flex-none">
+      <p class="text-2xl font-semibold text-slate-900"><%= liaison.ytd_event_count %></p>
+      <div class="mt-1"><%= risk_badge(risk) %></div>
+      <% if Current.user.admin? || Current.user.liaison == liaison %>
+        <div class="flex items-center justify-end gap-3 mt-2">
+          <%= link_to "Edit", edit_liaison_path(liaison), class: "text-[12px] font-medium text-brand-700 hover:text-brand-800" %>
+          <% if Current.user.admin? %>
+            <% if liaison.destroyable? %>
+              <%= button_to "Delete", liaison_path(liaison), method: :delete,
+                    data: { turbo_confirm: "Delete #{liaison.name}? This removes their login too." },
+                    class: "text-[12px] text-slate-400 hover:text-rose-600 bg-transparent border-0 cursor-pointer" %>
+            <% else %>
+              <span class="text-[12px] text-slate-300" title="Has assignment history - deactivate instead of deleting">Delete</span>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-4 gap-3 mb-8">
+    <div class="border border-slate-200 rounded-lg p-3 bg-white">
+      <p class="text-[11px] text-slate-400">This week</p>
+      <p class="text-[18px] font-semibold text-slate-900">
+        <%= liaison.events_in_week(Date.current).count %> / <%= AssignmentSetting.current.weekly_target %>
+      </p>
+    </div>
+    <div class="border border-slate-200 rounded-lg p-3 bg-white">
+      <p class="text-[11px] text-slate-400">Weekend days YTD</p>
+      <p class="text-[18px] font-semibold text-slate-900">
+        <%= liaison.weekend_events_ytd %>
+        <span class="text-[11px] font-normal text-slate-400">&middot; team avg <%= average_weekend.round(1) %></span>
+      </p>
+    </div>
+    <div class="border border-slate-200 rounded-lg p-3 bg-white">
+      <p class="text-[11px] text-slate-400">Drive hours YTD</p>
+      <p class="text-[18px] font-semibold text-slate-900"><%= liaison.ytd_drive_hours.round %></p>
+    </div>
+    <div class="border border-slate-200 rounded-lg p-3 bg-white">
+      <p class="text-[11px] text-slate-400">Miles YTD</p>
+      <p class="text-[18px] font-semibold text-slate-900"><%= number_with_delimiter(liaison.miles_ytd.round) %></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-6">
+    <div>
+      <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Upcoming assignments</h2>
+      <div class="border border-slate-200 rounded-lg bg-white divide-y divide-slate-100">
+        <% liaison.upcoming_events.each do |event| %>
+          <%= link_to event_path(event), class: "block px-3 py-2.5 hover:bg-slate-50" do %>
+            <p class="text-[13px] font-medium text-slate-900"><%= event.title %></p>
+            <p class="text-[11px] text-slate-500">
+              <%= event.city %> &middot; <%= event.starts_at.strftime("%a, %b %-d") %> &middot;
+              <%= event.starts_at.strftime("%H:%M") %>&ndash;<%= event.ends_at.strftime("%H:%M") %>
+            </p>
+          <% end %>
+        <% end %>
+        <% if liaison.upcoming_events.none? %>
+          <p class="px-3 py-3 text-[13px] text-slate-400">No upcoming assignments.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Load history &mdash; last 12 weeks</h2>
+      <% chart_data = weekly_pacing_chart_data(liaison.weekly_pacing_history) %>
+      <div class="bg-white border border-slate-200 rounded-lg p-3" style="height: 160px;">
+        <canvas data-controller="bar-chart"
+                data-bar-chart-labels-value="<%= chart_data[:labels].to_json %>"
+                data-bar-chart-values-value="<%= chart_data[:values].to_json %>"
+                data-bar-chart-colors-value="<%= chart_data[:colors].to_json %>"></canvas>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-1">
+        Red bars exceed the <%= AssignmentSetting.current.weekly_target %>-event weekly target.
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+<% content_for :title, "Set a new password - USAN Event Liaison Tracker" %>
+
+<div class="max-w-sm mx-auto px-6 py-16">
+  <h1 class="text-xl font-semibold text-slate-900 mb-1">Set a new password</h1>
+  <p class="text-[13px] text-slate-500 mb-6">For <%= @user.email_address %></p>
+
+  <%= form_with url: password_path(params[:token]), method: :put, class: "space-y-4" do |f| %>
+    <div>
+      <%= f.label :password, "New password", class: form_label_class %>
+      <%= f.password_field :password, required: true, autofocus: true, autocomplete: "new-password", class: form_field_class %>
+    </div>
+    <div>
+      <%= f.label :password_confirmation, "Confirm password", class: form_label_class %>
+      <%= f.password_field :password_confirmation, required: true, autocomplete: "new-password", class: form_field_class %>
+    </div>
+    <%= f.submit "Update password",
+          class: "w-full bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5 rounded-md cursor-pointer border-0" %>
+  <% end %>
+</div>

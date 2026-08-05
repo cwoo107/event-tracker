@@ -1,0 +1,66 @@
+<p>Hi <%= @liaison.name.split.first %>,</p>
+<p>
+  You've been assigned to <strong><%= @event.title %></strong>
+  (<%= @assignment.assignment_method.capitalize %>-assigned<%= @assignment.score ? ", score #{@assignment.score.round}" : "" %>).
+</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px;">
+  <tr>
+    <td style="padding: 6px 0; color: #64748b; width: 130px; vertical-align: top;">Date</td>
+    <td style="padding: 6px 0; color: #1e293b; font-weight: 600;"><%= @event.starts_at.strftime("%A, %B %-d, %Y") %></td>
+  </tr>
+  <tr>
+    <td style="padding: 6px 0; color: #64748b; vertical-align: top;">Time</td>
+    <td style="padding: 6px 0; color: #1e293b; font-weight: 600;">
+      <%= @event.starts_at.strftime("%H:%M") %>&ndash;<%= @event.ends_at.strftime("%H:%M") %>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding: 6px 0; color: #64748b; vertical-align: top;">Location</td>
+    <td style="padding: 6px 0; color: #1e293b; font-weight: 600;">
+      <%= [@event.venue_name, @event.address, @event.city].select(&:present?).join(", ") %>
+    </td>
+  </tr>
+  <% if @event.drive_time_minutes %>
+    <tr>
+      <td style="padding: 6px 0; color: #64748b; vertical-align: top;">Drive from HQ</td>
+      <td style="padding: 6px 0; color: #1e293b; font-weight: 600;">
+        <%= @event.drive_time_minutes %>m &middot; <%= @event.drive_distance_miles %>mi each way
+      </td>
+    </tr>
+  <% end %>
+  <tr>
+    <td style="padding: 6px 0; color: #64748b; vertical-align: top;">Prep / teardown</td>
+    <td style="padding: 6px 0; color: #1e293b; font-weight: 600;"><%= @event.prep_minutes %>m / <%= @event.teardown_minutes %>m</td>
+  </tr>
+  <% if @event.estimated_attendees.present? %>
+    <tr>
+      <td style="padding: 6px 0; color: #64748b; vertical-align: top;">Expected attendees</td>
+      <td style="padding: 6px 0; color: #1e293b; font-weight: 600;"><%= @event.estimated_attendees %></td>
+    </tr>
+  <% end %>
+  <tr>
+    <td style="padding: 6px 0; color: #64748b; vertical-align: top;">Requester</td>
+    <td style="padding: 6px 0; color: #1e293b;">
+      <strong><%= @event.requester_organization %></strong><br>
+      <%= @event.requester_name %><%= " &middot; #{@event.requester_phone}".html_safe if @event.requester_phone.present? %><br>
+      <%= @event.requester_email %>
+    </td>
+  </tr>
+</table>
+
+<% if @event.event_material_items.any? %>
+  <p style="margin-bottom: 4px; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+    Materials &amp; equipment
+  </p>
+  <ul style="margin: 0 0 16px; padding-left: 18px; font-size: 13px;">
+    <% @event.event_material_items.each do |item| %>
+      <li><%= item.material_item.name %><%= " (#{item.quantity})" if item.quantity.present? %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<p style="margin: 24px 0;">
+  <%= link_to "View this event", event_url(@event),
+        style: "background: #1f4d2b; color: #ffffff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;" %>
+</p>

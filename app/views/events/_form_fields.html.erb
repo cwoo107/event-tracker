@@ -1,0 +1,123 @@
+<section class="space-y-4">
+  <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Event basics</h2>
+
+  <div>
+    <%= f.label :title, class: form_label_class %>
+    <%= f.text_field :title, class: form_field_class, placeholder: "Sac Valley Ag Field Day" %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :event_type, "Event type", class: form_label_class %>
+      <%= f.select :event_type, Event.event_types.keys.map { |key| [key.humanize, key] },
+            { include_blank: "Select a type" }, class: form_field_class %>
+    </div>
+    <div>
+      <%= f.label :estimated_attendees, "Expected attendees", class: form_label_class %>
+      <%= f.number_field :estimated_attendees, class: form_field_class, min: 0 %>
+    </div>
+  </div>
+
+  <div>
+    <%= f.label :audience, class: form_label_class %>
+    <%= f.text_field :audience, class: form_field_class, placeholder: "General public, contractors, students..." %>
+  </div>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Schedule</h2>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :starts_at, "Starts", class: form_label_class %>
+      <%= f.datetime_field :starts_at, class: form_field_class %>
+    </div>
+    <div>
+      <%= f.label :ends_at, "Ends", class: form_label_class %>
+      <%= f.datetime_field :ends_at, class: form_field_class %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :prep_minutes, "Prep (minutes)", class: form_label_class %>
+      <%= f.number_field :prep_minutes, class: form_field_class, min: 0 %>
+    </div>
+    <div>
+      <%= f.label :teardown_minutes, "Teardown (minutes)", class: form_label_class %>
+      <%= f.number_field :teardown_minutes, class: form_field_class, min: 0 %>
+    </div>
+  </div>
+
+  <label class="flex items-center gap-2 text-[13px] text-slate-700">
+    <%= f.check_box :overnight_approved, class: "rounded border-slate-300 text-brand-600 focus:ring-brand-600/30" %>
+    Overnight stay approved
+  </label>
+</section>
+
+<section class="space-y-4" data-controller="geocoder" data-geocoder-access-token-value="<%= mapbox_access_token %>">
+  <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Location</h2>
+
+  <div>
+    <%= f.label :address, class: form_label_class %>
+    <div class="flex gap-2">
+      <%= f.text_field :address, data: { geocoder_target: "query" }, class: form_field_class,
+            placeholder: "550 Main St, Woodland, CA" %>
+      <button type="button" data-action="geocoder#locate"
+              class="px-3 py-2 text-[13px] font-medium text-brand-700 border border-slate-200 rounded-md hover:bg-slate-50 flex-none">
+        Locate
+      </button>
+    </div>
+    <p class="text-[12px] text-slate-400 mt-1" data-geocoder-target="status">Not yet located.</p>
+  </div>
+
+  <div>
+    <%= f.label :venue_name, class: form_label_class %>
+    <%= f.text_field :venue_name, class: form_field_class %>
+  </div>
+
+  <div class="grid grid-cols-3 gap-4">
+    <div>
+      <%= f.label :city, class: form_label_class %>
+      <%= f.text_field :city, data: { geocoder_target: "city" }, class: form_field_class %>
+    </div>
+    <div>
+      <%= f.label :county, class: form_label_class %>
+      <%= f.text_field :county, data: { geocoder_target: "county" }, class: form_field_class %>
+    </div>
+    <div>
+      <%= f.label :zip, class: form_label_class %>
+      <%= f.text_field :zip, data: { geocoder_target: "zip" }, class: form_field_class %>
+    </div>
+  </div>
+
+  <%= f.hidden_field :state, value: f.object.state || "CA", data: { geocoder_target: "state" } %>
+  <%= f.hidden_field :latitude, data: { geocoder_target: "latitude" } %>
+  <%= f.hidden_field :longitude, data: { geocoder_target: "longitude" } %>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Requester</h2>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :requester_organization, "Organization", class: form_label_class %>
+      <%= f.text_field :requester_organization, class: form_field_class %>
+    </div>
+    <div>
+      <%= f.label :requester_name, "Contact name", class: form_label_class %>
+      <%= f.text_field :requester_name, class: form_field_class %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= f.label :requester_email, "Contact email", class: form_label_class %>
+      <%= f.email_field :requester_email, class: form_field_class %>
+    </div>
+    <div>
+      <%= f.label :requester_phone, "Contact phone", class: form_label_class %>
+      <%= f.telephone_field :requester_phone, class: form_field_class %>
+    </div>
+  </div>
+</section>

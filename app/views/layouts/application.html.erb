@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "USAN Event Liaison Tracker" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <%# Loaded as a plain global script, not an ES module import - Mapbox GL
+        spins up a Web Worker internally to parse tiles, and that worker's
+        self-location can silently fail to resolve when the library is
+        loaded through an ESM re-export CDN via the importmap instead of a
+        normal script tag. This is why no tiles were ever requested despite
+        the map "loading" successfully otherwise. Keep this version number
+        in sync with itself - there's no separate JS pin anymore. %>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.22.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.22.0/mapbox-gl.js"></script>
+
+    <%# Same reasoning as mapbox-gl above: plain global script, not an ESM
+        import through the importmap. %>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased text-[14px] font-sans">
+  <% if Current.user.present? %>
+    <%= render "layouts/nav" %>
+    <% end %>
+    <%= yield %>
+  </body>
+</html>

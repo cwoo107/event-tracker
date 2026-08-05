@@ -1,0 +1,152 @@
+<div class="<%= status_bg_class(event) %> px-5 py-4 text-white">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-white/70">
+      <span><%= event.status %></span><span>&middot;</span><span><%= event.reference_code %></span>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= link_to "Edit", edit_event_path(event), data: { turbo_frame: "event_detail" },
+            class: "text-white/70 hover:text-white text-[12px] font-medium" %>
+      <%= link_to map_path, data: { turbo_frame: "event_detail" }, class: "text-white/70 hover:text-white text-lg leading-none", aria: { label: "Close" } do %>
+        &times;
+      <% end %>
+    </div>
+  </div>
+  <p class="text-lg font-semibold mt-1"><%= event.title %></p>
+  <p class="text-[13px] text-white/80"><%= event.requester_organization %></p>
+</div>
+
+<div class="grid grid-cols-2 gap-px bg-slate-100">
+  <div class="bg-white p-3">
+    <p class="text-[11px] text-slate-400">Date</p>
+    <p class="text-[13px] font-medium text-slate-800"><%= event.starts_at.strftime("%a, %b %-d") %></p>
+  </div>
+  <div class="bg-white p-3">
+    <p class="text-[11px] text-slate-400">Event window</p>
+    <p class="text-[13px] font-medium text-slate-800"><%= event.starts_at.strftime("%H:%M") %>&ndash;<%= event.ends_at.strftime("%H:%M") %></p>
+  </div>
+  <div class="bg-white p-3">
+    <p class="text-[11px] text-slate-400">Drive from HQ</p>
+    <p class="text-[13px] font-medium text-slate-800">
+      <% if event.drive_time_minutes %>
+        <%= event.drive_time_minutes %>m &middot; <%= event.drive_distance_miles %>mi each way
+      <% else %>
+        Not yet calculated
+      <% end %>
+    </p>
+  </div>
+  <div class="bg-white p-3">
+    <p class="text-[11px] text-slate-400">Prep / teardown</p>
+    <p class="text-[13px] font-medium text-slate-800"><%= event.prep_minutes %>m / <%= event.teardown_minutes %>m</p>
+  </div>
+  <div class="bg-white p-3">
+    <p class="text-[11px] text-slate-400">Attendees</p>
+    <p class="text-[13px] font-medium text-slate-800"><%= event.estimated_attendees || "&mdash;".html_safe %></p>
+  </div>
+  <div class="bg-white p-3">
+    <p class="text-[11px] text-slate-400">Location</p>
+    <p class="text-[13px] font-medium text-slate-800"><%= event.city %></p>
+  </div>
+</div>
+
+<div class="p-4 border-b border-slate-100">
+  <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2">
+    Assigned liaison<%= "s" if event.co_staffed? %>
+  </p>
+
+  <% event.liaisons.each do |liaison| %>
+    <div class="flex items-center gap-3 bg-slate-50 rounded-lg p-3 mb-1.5">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-[12px] font-semibold flex-none" style="background: <%= liaison.color %>">
+        <%= liaison.initials %>
+      </div>
+      <div class="flex-1">
+        <p class="text-[13px] font-medium text-slate-900"><%= liaison.name %></p>
+        <% weekly_count = liaison.events_in_week(event.starts_at).count %>
+        <p class="text-[11px] text-slate-500">
+          <%= liaison.home_city.present? ? "based #{liaison.home_city} &middot; ".html_safe : "" %>
+          <%= weekly_count %> event<%= "s" unless weekly_count == 1 %> this week
+        </p>
+      </div>
+      <%= link_to "Reassign", candidates_event_path(event), data: { turbo_frame: "event_detail" },
+            class: "text-[12px] font-medium text-brand-700 hover:text-brand-800" %>
+    </div>
+    <% last_assignment = event.assignments.where(liaison: liaison).order(:created_at).last %>
+    <% if last_assignment %>
+      <p class="text-[11px] text-slate-400 mb-2">
+        <%= last_assignment.assignment_method.capitalize %>-assigned <%= last_assignment.created_at.strftime("%b %-d") %>
+        <% if last_assignment.score %> &middot; score <%= last_assignment.score.round %><% end %>
+        &middot; <%= last_assignment.assignment_status %>
+      </p>
+    <% end %>
+  <% end %>
+
+  <% if event.liaisons.empty? %>
+    <%= button_to "Auto-assign", auto_assign_event_path(event), method: :post, data: { turbo_frame: "_top" },
+          class: "w-full text-[13px] font-semibold text-brand-900 bg-lime-400 hover:bg-lime-500 rounded-lg py-2.5 border-0 cursor-pointer" %>
+    <%= link_to "View ranked suggestions", candidates_event_path(event), data: { turbo_frame: "event_detail" },
+          class: "block text-center text-[12px] font-medium text-brand-700 hover:text-brand-800 mt-2" %>
+  <% else %>
+    <% if event.requires_second_liaison? && !event.co_staffed? %>
+      <p class="text-[12px] text-amber-700 bg-amber-50 rounded-md px-2.5 py-1.5 mb-2">
+        <%= event.estimated_attendees %> expected attendees exceeds the co-staffing threshold - this event needs a second liaison.
+      </p>
+    <% end %>
+    <div class="flex items-center gap-3">
+      <%= link_to "Assign additional liaison", candidates_event_path(event, mode: "add"), data: { turbo_frame: "event_detail" },
+            class: "text-[12px] font-medium text-brand-700 hover:text-brand-800" %>
+      <%= button_to "Unassign", unassign_event_path(event), method: :post,
+            data: { turbo_frame: "_top", turbo_confirm: "Unassign this event?" },
+            class: "text-[12px] text-slate-400 hover:text-slate-600 bg-transparent border-0 cursor-pointer" %>
+    </div>
+  <% end %>
+</div>
+
+<div class="p-4 border-b border-slate-100">
+  <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Requester</p>
+  <div class="space-y-1 text-[13px]">
+    <p class="text-slate-800 font-medium"><%= event.requester_organization %></p>
+    <p class="text-slate-500">
+      <%= event.requester_name %><%= " &middot; #{event.requester_phone}".html_safe if event.requester_phone.present? %>
+    </p>
+    <p class="text-brand-700"><%= mail_to event.requester_email, nil, class: "hover:underline" %></p>
+    <p class="text-slate-400 text-[12px] pt-1">
+      Submitted <%= event.created_at.strftime("%b %-d, %Y") %> via <%= event.source.humanize.downcase %>
+    </p>
+  </div>
+</div>
+
+<% if event.event_material_items.any? %>
+  <div class="p-4 border-b border-slate-100">
+    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Materials &amp; equipment</p>
+    <div class="divide-y divide-slate-100">
+      <% event.event_material_items.each do |item| %>
+        <div class="flex items-center gap-2 py-1.5">
+          <%= check_box_tag "checked_#{item.id}", "1", item.checked?, disabled: true,
+                class: "rounded border-slate-300 text-brand-600 focus:ring-brand-600/30" %>
+          <span class="text-[13px] text-slate-700 flex-1"><%= item.material_item.name %></span>
+          <span class="text-[12px] text-slate-400"><%= item.quantity %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<div class="p-4">
+  <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1">Activity</p>
+  <div class="space-y-2">
+    <% recent_activities = event.activities.to_a.sort_by(&:created_at).reverse.first(10) %>
+    <% recent_activities.each do |activity| %>
+      <p class="text-[12px] text-slate-500">
+        <span class="text-slate-700 font-medium"><%= activity.actor&.short_name || "System" %></span>
+        <%= activity.action %> &middot; <%= time_ago_in_words(activity.created_at) %> ago
+      </p>
+    <% end %>
+    <% event.notes.to_a.sort_by(&:created_at).reverse_each do |note| %>
+      <p class="text-[12px] text-slate-500">
+        <span class="text-slate-700 font-medium"><%= note.author.short_name %>:</span> <%= note.body %>
+      </p>
+    <% end %>
+    <% if event.activities.empty? && event.notes.empty? %>
+      <p class="text-[12px] text-slate-400">No activity yet.</p>
+    <% end %>
+  </div>
+</div>

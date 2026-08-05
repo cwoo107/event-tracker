@@ -1,0 +1,13 @@
+<% content_for :title, "Liaisons &middot; USAN Event Liaison Tracker" %>
+
+<div style="display: flex; height: calc(100vh - 64px);">
+  <aside style="width: 300px; flex: 0 0 auto; display: flex; flex-direction: column;" class="border-r border-slate-200 bg-white">
+    <%= render "liaisons/sidebar" %>
+  </aside>
+
+  <main style="flex: 1 1 0%; min-width: 0; overflow-y: auto;">
+    <div style="height: 100%; display: flex; align-items: center; justify-content: center;" class="text-slate-400 text-[13px]">
+      Select a liaison from the sidebar to see their profile.
+    </div>
+  </main>
+</div>

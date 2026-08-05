@@ -1,0 +1,17 @@
+<% content_for :title, "Reset your password - USAN Event Liaison Tracker" %>
+
+<div class="max-w-sm mx-auto px-6 py-16">
+  <h1 class="text-xl font-semibold text-slate-900 mb-1">Reset your password</h1>
+  <p class="text-[13px] text-slate-500 mb-6">We'll email you a link to set a new one.</p>
+
+  <%= form_with url: passwords_path, method: :post, class: "space-y-4" do |f| %>
+    <div>
+      <%= f.label :email_address, class: form_label_class %>
+      <%= f.email_field :email_address, required: true, autofocus: true, class: form_field_class %>
+    </div>
+    <%= f.submit "Send reset instructions",
+          class: "w-full bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5 rounded-md cursor-pointer border-0" %>
+  <% end %>
+
+  <%= link_to "Back to sign in", new_session_path, class: "block text-center text-[12px] text-slate-500 hover:text-slate-700 mt-4" %>
+</div>

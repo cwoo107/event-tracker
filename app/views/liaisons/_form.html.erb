@@ -1,0 +1,64 @@
+<div class="p-6 max-w-lg">
+  <h1 class="text-lg font-semibold text-slate-900 mb-1">
+    <%= liaison.persisted? ? "Edit liaison" : "New liaison" %>
+  </h1>
+  <% if liaison.persisted? && !Current.user.admin? %>
+    <p class="text-[13px] text-slate-500 mb-6">Region, home city, skills, and color are yours to update; ask an admin for anything else.</p>
+  <% else %>
+    <div class="mb-6"></div>
+  <% end %>
+
+  <%= form_with model: liaison, url: url, method: http_method, class: "space-y-6" do |f| %>
+    <% if liaison.errors.any? %>
+      <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-[13px] text-rose-700">
+        <p class="font-medium mb-1">Fix the following before saving:</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <% liaison.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= f.fields_for :user do |uf| %>
+      <div>
+        <%= uf.label :name, class: form_label_class %>
+        <%= uf.text_field :name, class: form_field_class %>
+      </div>
+      <div>
+        <%= uf.label :email_address, "Email", class: form_label_class %>
+        <%= uf.email_field :email_address, class: form_field_class %>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :home_city, class: form_label_class %>
+      <%= f.text_field :home_city, class: form_field_class %>
+    </div>
+
+    <div>
+      <%= f.label :skills_text, "Skills", class: form_label_class %>
+      <%= f.text_field :skills_text, class: form_field_class, placeholder: "Spanish bilingual, CDL-certified rig" %>
+      <p class="text-[12px] text-slate-400 mt-1">Comma-separated.</p>
+    </div>
+
+    <div>
+      <%= f.label :color, class: form_label_class %>
+      <%= f.color_field :color, class: "h-9 w-16 border border-slate-200 rounded-md cursor-pointer" %>
+    </div>
+
+    <% if Current.user.admin? %>
+      <label class="flex items-center gap-2 text-[13px] text-slate-700">
+        <%= f.check_box :active, class: "rounded border-slate-300 text-brand-600 focus:ring-brand-600/30" %>
+        Active (eligible for new assignments)
+      </label>
+    <% end %>
+
+    <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+      <%= link_to "Cancel", (liaison.persisted? ? liaison_path(liaison) : liaisons_path),
+            class: "text-[13px] font-medium text-slate-500 hover:text-slate-700" %>
+      <%= f.submit (liaison.persisted? ? "Save changes" : "Create liaison"),
+            class: "bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5 rounded-md cursor-pointer border-0" %>
+    </div>
+  <% end %>
+</div>

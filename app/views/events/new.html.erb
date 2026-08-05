@@ -1,0 +1,37 @@
+<% content_for :title, "New event request &middot; USAN Event Liaison Tracker" %>
+
+<div class="max-w-2xl mx-auto px-6 py-10">
+  <h1 class="text-xl font-semibold text-slate-900">New event request</h1>
+  <p class="text-[13px] text-slate-500 mt-1 mb-8">
+    Staff-entered request. Public-form and member-portal submissions land in Requests once that screen exists.
+  </p>
+
+  <%= form_with model: @event, url: events_path, class: "space-y-9" do |f| %>
+    <% if @event.errors.any? %>
+      <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-[13px] text-rose-700">
+        <p class="font-medium mb-1">Fix the following before submitting:</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <% @event.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= render "events/form_fields", f: f %>
+
+    <% if Current.user.liaison %>
+      <label class="flex items-center gap-2.5 text-[13px] text-slate-700 bg-brand-50 rounded-lg px-3.5 py-3">
+        <%= check_box_tag "assign_to_me", "1", false,
+              class: "rounded border-slate-300 text-brand-600 focus:ring-brand-600/30" %>
+        Assign this event to me
+      </label>
+    <% end %>
+
+    <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+      <%= link_to "Cancel", map_path, class: "text-[13px] font-medium text-slate-500 hover:text-slate-700" %>
+      <%= f.submit "Create event",
+            class: "bg-lime-400 hover:bg-lime-500 text-brand-900 text-[13px] font-semibold px-4 py-2.5 rounded-md cursor-pointer border-0" %>
+    </div>
+  <% end %>
+</div>

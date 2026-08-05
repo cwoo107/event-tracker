@@ -1,0 +1,11 @@
+<% content_for :title, "Edit #{@liaison.name} &middot; USAN Event Liaison Tracker" %>
+
+<div style="display: flex; height: calc(100vh - 64px);">
+  <aside style="width: 300px; flex: 0 0 auto; display: flex; flex-direction: column;" class="border-r border-slate-200 bg-white">
+    <%= render "liaisons/sidebar" %>
+  </aside>
+
+  <main style="flex: 1 1 0%; min-width: 0; overflow-y: auto;">
+    <%= render "liaisons/form", liaison: @liaison, url: liaison_path(@liaison), http_method: :patch %>
+  </main>
+</div>

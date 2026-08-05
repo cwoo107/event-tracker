@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #f0f7f1;
+  --color-brand-100: #dcebe0;
+  --color-brand-200: #b9d7c2;
+  --color-brand-300: #8fbd9c;
+  --color-brand-600: #2f7a3e;
+  --color-brand-700: #1f4d2b;
+  --color-brand-800: #173a24;
+  --color-brand-900: #0f2818;
+
+  --color-lime-50: #fbfce8;
+  --color-lime-100: #f3f6c6;
+  --color-lime-300: #dbe36a;
+  --color-lime-400: #c3d117;
+  --color-lime-500: #aebe14;
+  --color-lime-600: #8a9710;
+  --color-lime-700: #6d7a0d;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+  Sidebar row + map marker "selected" state. Kept as plain CSS rather than
+  Tailwind utilities because the accent color is per-liaison and data-driven
+  (set inline as --liaison-color), not one of the theme's fixed colors.
+*/
+.sidebar-row.is-active {
+  background: var(--color-brand-50);
+  border-left-color: var(--liaison-color, var(--color-brand-700));
+}
+
+.map-marker {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  cursor: pointer;
+}
+.map-marker .dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.map-marker.is-active .dot {
+  width: 18px;
+  height: 18px;
+  box-shadow: 0 0 0 3px rgba(31, 77, 43, 0.25), 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.radius-ring {
+  position: absolute;
+  border: 1px dashed #c9d6cc;
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}

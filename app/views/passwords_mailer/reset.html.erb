@@ -1,0 +1,13 @@
+<p>Hi <%= @user.short_name %>,</p>
+<p>
+  Someone requested a password reset for your USAN Event Liaison Tracker account. If this was
+  you, set a new password below - this link expires in 15 minutes:
+</p>
+<p style="margin: 24px 0;">
+  <%= link_to "Reset your password", edit_password_url(@user.generate_token_for(:password_reset)),
+        style: "background: #1f4d2b; color: #ffffff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;" %>
+</p>
+<p>
+  If you didn't request this, you can safely ignore this email - your password won't change
+  unless you visit the link above and set a new one.
+</p>

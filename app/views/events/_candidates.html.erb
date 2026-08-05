@@ -1,0 +1,68 @@
+<div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+  <div>
+    <p class="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+      <%= mode == "add" ? "Add a liaison" : "Ranked suggestions" %>
+    </p>
+    <p class="text-[15px] font-semibold text-slate-900"><%= event.title %></p>
+  </div>
+  <%= link_to event_path(event), data: { turbo_frame: "event_detail" },
+        class: "text-slate-400 hover:text-slate-600 text-lg leading-none", aria: { label: "Cancel" } do %>
+    &times;
+  <% end %>
+</div>
+
+<div class="divide-y divide-slate-100">
+  <% ranking.candidates.each do |candidate| %>
+    <div class="p-4 <%= "bg-rose-50/50" if candidate.blocked? %>">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-semibold flex-none"
+             style="background: <%= candidate.liaison.color %>">
+          <%= candidate.liaison.initials %>
+        </div>
+        <div class="flex-1">
+          <p class="text-[13px] font-medium text-slate-900"><%= candidate.liaison.name %></p>
+        </div>
+        <p class="text-[16px] font-semibold text-slate-900"><%= candidate.score.round %></p>
+      </div>
+
+      <div class="space-y-1 mb-2">
+        <% candidate.breakdown.each do |criterion, points| %>
+          <% max_points = weights[criterion].to_f %>
+          <% fill_percent = max_points.positive? ? (points / max_points * 100).clamp(0, 100) : 0 %>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-slate-500 w-32 flex-none truncate"><%= criterion.humanize %></span>
+            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-brand-600" style="width: <%= fill_percent %>%"></div>
+            </div>
+            <span class="text-[11px] text-slate-400 w-8 text-right flex-none"><%= points.round(1) %></span>
+          </div>
+        <% end %>
+      </div>
+
+      <% if candidate.blocked? %>
+        <div class="text-[12px] text-rose-700 bg-rose-100 rounded-md px-2.5 py-1.5 mb-2 space-y-0.5">
+          <% candidate.block_reasons.each do |reason| %>
+            <p>&#9888;&nbsp; <%= reason %></p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%= button_to (candidate.blocked? ? "Assign anyway" : "Assign"), assign_candidate_event_path(event),
+            method: :post,
+            params: { liaison_id: candidate.liaison.id, mode: mode },
+            data: {
+              turbo_frame: "_top",
+              turbo_confirm: candidate.blocked? ? "This overrides a hard rule: #{candidate.block_reasons.join('; ')}. Assign anyway?" : nil
+            },
+            class: class_names(
+              "w-full text-[12px] font-semibold rounded-md py-2 border-0 cursor-pointer",
+              "bg-lime-400 hover:bg-lime-500 text-brand-900" => !candidate.blocked?,
+              "bg-rose-100 hover:bg-rose-200 text-rose-800" => candidate.blocked?
+            ) %>
+    </div>
+  <% end %>
+
+  <% if ranking.candidates.empty? %>
+    <p class="p-4 text-[13px] text-slate-400">No active liaisons available to rank.</p>
+  <% end %>
+</div>

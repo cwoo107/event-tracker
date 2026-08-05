@@ -1,0 +1,77 @@
+<% content_for :title, "Settings &middot; USAN Event Liaison Tracker" %>
+
+<div class="max-w-3xl mx-auto px-6 py-10">
+  <h1 class="text-xl font-semibold text-slate-900">Assignment engine</h1>
+  <p class="text-[13px] text-slate-500 mt-1 mb-8">
+    Weights are relative - the engine scores every available liaison against each open event and proposes the
+    highest total. Changes take effect on the next ranking.
+  </p>
+
+  <%= form_with url: settings_path, method: :patch, class: "space-y-10" do |f| %>
+    <section class="space-y-5" data-controller="assignment-engine">
+      <% @form.weights.each do |criterion, weight| %>
+        <div class="border-b border-slate-100 pb-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <div>
+              <p class="text-[13px] font-medium text-slate-900"><%= criterion.humanize %></p>
+              <p class="text-[12px] text-slate-500"><%= criterion_description(criterion) %></p>
+            </div>
+            <p class="text-[15px] font-semibold text-slate-900" data-assignment-engine-target="output"><%= weight.to_i %>%</p>
+          </div>
+          <input type="range" name="weights[<%= criterion %>]" min="0" max="100" step="1" value="<%= weight.to_i %>"
+                 data-assignment-engine-target="input" data-action="input->assignment-engine#update"
+                 class="w-full accent-brand-700">
+        </div>
+      <% end %>
+      <p class="text-[12px] text-slate-400">
+        Weights currently sum to <span data-assignment-engine-target="total"><%= @form.weights.values.sum(&:to_i) %></span>%
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Hard rules</h2>
+      <div class="space-y-1 border border-slate-200 rounded-lg p-4">
+        <% @form.rules.each do |key, rule| %>
+          <label class="flex items-start gap-2.5 py-1.5">
+            <%= hidden_field_tag "rules[#{key}][enabled]", "0", id: nil %>
+            <input type="checkbox" name="rules[<%= key %>][enabled]" value="1" <%= "checked" if rule&.enabled? %>
+                   class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-600/30">
+            <span class="text-[13px] text-slate-700"><%= rule_description(key, rule) %></span>
+          </label>
+        <% end %>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Calendar basis</h2>
+      <div class="grid grid-cols-4 gap-3">
+        <div class="border border-slate-200 rounded-lg p-3">
+          <label class="text-[11px] text-slate-400 block mb-1">Work weeks</label>
+          <input type="number" name="work_weeks_per_year" value="<%= @form.work_weeks_per_year %>" min="1" max="52"
+                 class="text-[15px] font-semibold text-slate-900 w-full border-0 p-0 focus:outline-none focus:ring-0">
+        </div>
+        <div class="border border-slate-200 rounded-lg p-3">
+          <label class="text-[11px] text-slate-400 block mb-1">Events / week</label>
+          <input type="number" name="weekly_target" value="<%= @form.weekly_target %>" min="1" max="10"
+                 class="text-[15px] font-semibold text-slate-900 w-full border-0 p-0 focus:outline-none focus:ring-0">
+        </div>
+        <div class="border border-slate-200 rounded-lg p-3">
+          <p class="text-[11px] text-slate-400 mb-1">Annual target</p>
+          <p class="text-[15px] font-semibold text-slate-900"><%= @form.work_weeks_per_year.to_i * @form.weekly_target.to_i %></p>
+        </div>
+        <div class="border border-slate-200 rounded-lg p-3">
+          <p class="text-[11px] text-slate-400 mb-1">Active liaisons</p>
+          <p class="text-[15px] font-semibold text-slate-900"><%= Liaison.active.count %></p>
+        </div>
+      </div>
+    </section>
+
+    <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+      <%= button_to "Reset to defaults", reset_settings_path, method: :post,
+            data: { turbo_confirm: "Reset all weights and hard rules to their defaults?" },
+            class: "text-[13px] font-medium text-slate-500 hover:text-slate-700 bg-transparent border-0 cursor-pointer" %>
+      <%= f.submit "Save &amp; re-score queue".html_safe,
+            class: "bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5 rounded-md cursor-pointer border-0" %>
+    </div>
+  <% end %>
+</div>

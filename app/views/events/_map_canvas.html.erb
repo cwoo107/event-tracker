@@ -1,0 +1,43 @@
+<div id="site-map-wrapper"
+     data-controller="mapbox"
+     data-mapbox-access-token-value="<%= mapbox_access_token %>"
+     data-mapbox-office-lng-value="<%= Event::OFFICE_LOCATION.x %>"
+     data-mapbox-office-lat-value="<%= Event::OFFICE_LOCATION.y %>"
+     data-mapbox-events-value="<%= events_for_map(@unassigned_events + @assigned_events + @completed_events).to_json %>"
+     data-mapbox-selected-id-value="<%= @selected_event&.id %>"
+     data-turbo-permanent
+     style="position: absolute; top: 0; right: 0; bottom: 0; left: 0;">
+  <div data-mapbox-target="canvas" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0;"></div>
+
+  <div style="position: absolute; top: 16px; left: 16px; width: 192px; pointer-events: none;"
+       class="bg-white/95 backdrop-blur border border-slate-200 rounded-xl shadow-sm p-3">
+    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Liaison key</p>
+    <div class="space-y-1.5">
+      <% @liaisons.each do |liaison| %>
+        <div class="flex items-center gap-1.5 text-[12px] text-slate-600">
+          <span class="w-2.5 h-2.5 rounded-full flex-none" style="background: <%= liaison.color %>"></span><%= liaison.name %>
+        </div>
+      <% end %>
+    </div>
+    <div class="mt-2 pt-2 border-t border-slate-100 space-y-1 text-[12px] text-slate-500">
+      <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full border-2 border-slate-400"></span>Unassigned</div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full" style="background: #cbd5e1; border: 2px solid #64748b;"></span>Assigned &middot; ring = liaison
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full" style="background: #64748b;"></span>Complete &middot; fill = liaison
+      </div>
+    </div>
+    <button type="button" data-action="click->mapbox#toggleCompleted" style="pointer-events: auto;"
+            class="text-[11px] font-medium text-brand-700 hover:text-brand-800 mt-2">
+      Hide completed
+    </button>
+  </div>
+
+  <div style="position: absolute; bottom: 16px; left: 16px; pointer-events: none;"
+       class="bg-white/95 backdrop-blur border border-slate-200 rounded-xl shadow-sm px-3 py-2 flex items-center gap-4 text-[12px]">
+    <div><p class="text-slate-400">HQ</p><p class="font-medium text-slate-700">4005 Port Chicago Hwy</p></div>
+    <div class="h-6 w-px bg-slate-200"></div>
+    <div><p class="text-slate-400">Radius rings</p><p class="font-medium text-slate-700">45 / 90 / 150 min (approx.)</p></div>
+  </div>
+</div>

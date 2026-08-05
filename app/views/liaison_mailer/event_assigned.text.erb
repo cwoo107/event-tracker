@@ -1,0 +1,26 @@
+Hi <%= @liaison.name.split.first %>,
+
+You've been assigned to <%= @event.title %> (<%= @assignment.assignment_method.capitalize %>-assigned<%= @assignment.score ? ", score #{@assignment.score.round}" : "" %>).
+
+Date: <%= @event.starts_at.strftime("%A, %B %-d, %Y") %>
+Time: <%= @event.starts_at.strftime("%H:%M") %>-<%= @event.ends_at.strftime("%H:%M") %>
+Location: <%= [@event.venue_name, @event.address, @event.city].select(&:present?).join(", ") %>
+<% if @event.drive_time_minutes -%>
+Drive from HQ: <%= @event.drive_time_minutes %>m (<%= @event.drive_distance_miles %>mi each way)
+<% end -%>
+Prep / teardown: <%= @event.prep_minutes %>m / <%= @event.teardown_minutes %>m
+<% if @event.estimated_attendees.present? -%>
+Expected attendees: <%= @event.estimated_attendees %>
+<% end -%>
+
+Requester: <%= @event.requester_organization %> - <%= @event.requester_name %><%= " · #{@event.requester_phone}" if @event.requester_phone.present? %>
+<%= @event.requester_email %>
+<% if @event.event_material_items.any? -%>
+
+Materials & equipment:
+<% @event.event_material_items.each do |item| -%>
+- <%= item.material_item.name %><%= " (#{item.quantity})" if item.quantity.present? %>
+<% end -%>
+<% end -%>
+
+View this event: <%= event_url(@event) %>

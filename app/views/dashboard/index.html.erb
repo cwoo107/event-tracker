@@ -1,0 +1,154 @@
+<% content_for :title, "Dashboard &middot; USAN Event Liaison Tracker" %>
+
+<div class="max-w-6xl mx-auto px-6 py-8">
+  <div class="flex items-center justify-between mb-1">
+    <h1 class="text-xl font-semibold text-slate-900">Liaison load &amp; balance</h1>
+    <div class="flex gap-1.5">
+      <% dashboard_range_options.each do |value, label| %>
+        <%= link_to label, dashboard_path(range: value),
+              class: "px-3 py-1.5 text-[12px] font-medium rounded-md #{@report.range == value ? 'bg-brand-700 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}" %>
+      <% end %>
+    </div>
+  </div>
+  <p class="text-[13px] text-slate-500 mb-6">
+    <%= AssignmentSetting.current.work_weeks_per_year %>-week calendar &middot;
+    <%= AssignmentSetting.current.weekly_target %> events per liaison per week &middot;
+    <%= AssignmentSetting.current.work_weeks_per_year * AssignmentSetting.current.weekly_target %> events per liaison annually
+    &middot; showing <%= @report.range_label %>
+  </p>
+
+  <div class="grid grid-cols-5 gap-3 mb-8">
+    <div class="border border-slate-200 rounded-lg p-3 bg-white">
+      <p class="text-[11px] text-slate-400">Open requests</p>
+      <p class="text-[20px] font-semibold text-slate-900"><%= @report.open_requests_count %></p>
+    </div>
+    <div class="border border-slate-200 rounded-lg p-3 bg-white">
+      <p class="text-[11px] text-slate-400">Assigned this week</p>
+      <p class="text-[20px] font-semibold text-slate-900"><%= @report.assigned_this_week_count %> / <%= @report.total_this_week_count %></p>
+    </div>
+    <div class="border border-slate-200 rounded-lg p-3 bg-white">
+      <p class="text-[11px] text-slate-400">Avg drive / event</p>
+      <p class="text-[20px] font-semibold text-slate-900"><%= @report.average_drive_minutes %>m</p>
+    </div>
+    <div class="border border-slate-200 rounded-lg p-3 bg-white">
+      <p class="text-[11px] text-slate-400">Weekend events</p>
+      <p class="text-[20px] font-semibold text-slate-900"><%= @report.weekend_event_count %></p>
+    </div>
+    <div class="border border-slate-200 rounded-lg p-3 bg-white">
+      <p class="text-[11px] text-slate-400">Flagged</p>
+      <p class="text-[20px] font-semibold text-slate-900"><%= @report.burnout_watch.size %></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-6 mb-8">
+    <div class="col-span-2">
+      <h2 class="text-[13px] font-semibold text-slate-900 mb-3">Per-liaison breakdown</h2>
+      <div class="border border-slate-200 rounded-lg overflow-hidden bg-white">
+        <table class="w-full text-[13px]">
+          <thead>
+            <tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400">
+              <th class="px-3 py-2">Liaison</th>
+              <th class="px-3 py-2">YTD vs target</th>
+              <th class="px-3 py-2 text-right">This wk</th>
+              <th class="px-3 py-2 text-right">Wknd</th>
+              <th class="px-3 py-2 text-right">Drive hrs</th>
+              <th class="px-3 py-2 text-right">Miles</th>
+              <th class="px-3 py-2 text-right">Risk</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% @report.liaison_rows.each do |row| %>
+              <tr>
+                <td class="px-3 py-2">
+                  <%= link_to liaison_path(row.liaison), class: "flex items-center gap-2 hover:text-brand-700" do %>
+                    <span class="w-2 h-2 rounded-full flex-none" style="background: <%= row.liaison.color %>"></span>
+                    <%= row.liaison.name %>
+                  <% end %>
+                </td>
+                <td class="px-3 py-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <% percent = row.annual_target.positive? ? [(row.ytd_count.to_f / row.annual_target * 100), 100].min : 0 %>
+                      <div class="h-full bg-brand-600" style="width: <%= percent %>%"></div>
+                    </div>
+                    <span class="text-[12px] text-slate-500"><%= row.ytd_count %>/<%= row.annual_target %></span>
+                  </div>
+                </td>
+                <td class="px-3 py-2 text-right"><%= row.weekly_count %></td>
+                <td class="px-3 py-2 text-right"><%= row.weekend_count %></td>
+                <td class="px-3 py-2 text-right"><%= row.drive_hours %></td>
+                <td class="px-3 py-2 text-right"><%= number_with_delimiter(row.miles) %></td>
+                <td class="px-3 py-2 text-right"><%= risk_badge(row.risk) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-[13px] font-semibold text-slate-900 mb-3">Burnout watch</h2>
+      <div class="border border-slate-200 rounded-lg bg-white p-3 space-y-3">
+        <% if @report.burnout_watch.any? %>
+          <% @report.burnout_watch.each do |result| %>
+            <div class="flex items-start gap-2">
+              <span class="w-2 h-2 rounded-full flex-none mt-1.5" style="background: <%= result.liaison.color %>"></span>
+              <div>
+                <p class="text-[13px] font-medium text-slate-900"><%= result.liaison.name %></p>
+                <p class="text-[12px] text-slate-500"><%= result.reasons.join(". ") %>.</p>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-[13px] text-slate-400">Nobody's flagged right now.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-6 mb-8">
+    <div>
+      <h2 class="text-[13px] font-semibold text-slate-900 mb-3">Weekly pacing &mdash; all liaisons</h2>
+      <% chart_data = weekly_pacing_chart_data(@report.weekly_pacing_series) %>
+      <div class="bg-white border border-slate-200 rounded-lg p-3" style="height: 200px;">
+        <canvas data-controller="bar-chart"
+                data-bar-chart-labels-value="<%= chart_data[:labels].to_json %>"
+                data-bar-chart-values-value="<%= chart_data[:values].to_json %>"
+                data-bar-chart-colors-value="<%= chart_data[:colors].to_json %>"></canvas>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-[13px] font-semibold text-slate-900 mb-3">Events by region</h2>
+      <% region_data = @report.events_by_region %>
+      <div class="bg-white border border-slate-200 rounded-lg p-3" style="height: 200px;">
+        <canvas data-controller="bar-chart"
+                data-bar-chart-labels-value="<%= region_data.map { |region, _| region }.to_json %>"
+                data-bar-chart-values-value="<%= region_data.map { |_, count| count }.to_json %>"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2 class="text-[13px] font-semibold text-slate-900 mb-3">Next 30 days</h2>
+    <div class="bg-white border border-slate-200 rounded-lg divide-y divide-slate-100">
+      <% @report.upcoming_events.each do |event| %>
+        <%= link_to event_path(event), class: "flex items-center justify-between px-4 py-2.5 hover:bg-slate-50" do %>
+          <div>
+            <p class="text-[13px] font-medium text-slate-900"><%= event.title %></p>
+            <p class="text-[11px] text-slate-500"><%= event.city %> &middot; <%= event.starts_at.strftime("%a, %b %-d") %></p>
+          </div>
+          <% if event.liaisons.any? %>
+            <% style = marker_style(event) %>
+            <span class="w-2.5 h-2.5 rounded-full flex-none" style="background: <%= style.fill %>; border: 1.5px solid <%= style.border %>;"></span>
+          <% else %>
+            <span class="text-[11px] text-slate-400">Unassigned</span>
+          <% end %>
+        <% end %>
+      <% end %>
+      <% if @report.upcoming_events.none? %>
+        <p class="px-4 py-3 text-[13px] text-slate-400">Nothing in the next 30 days.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

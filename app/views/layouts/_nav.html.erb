@@ -1,0 +1,44 @@
+<header class="h-16 flex items-center gap-6 px-6 border-b border-slate-200 bg-white">
+  <%= link_to map_path, class: "flex items-center gap-2.5" do %>
+    <div class="flex items-center gap-1">
+      <%= image_tag('811 Icon - Right.jpg', width: "100px", height: "auto") %>
+    </div>
+    <div class="h-8 w-px bg-slate-200 mx-1"></div>
+    <div class="leading-tight text-left">
+      <p class="text-sm font-semibold text-slate-900">Event tracker</p>
+      <p class="text-[11px] text-slate-500">Marketing &amp; Education </p>
+    </div>
+  <% end %>
+
+  <nav class="flex items-center gap-1 text-[13px] font-medium text-slate-500">
+    <%= link_to "Map", map_path,
+          class: "px-3 py-2 rounded-md #{current_page?(map_path) ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 hover:text-slate-900'}" %>
+    <%= link_to "Dashboard", dashboard_path,
+          class: "px-3 py-2 rounded-md #{current_page?(dashboard_path) ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 hover:text-slate-900'}" %>
+    <%= link_to "Calendar", calendar_path,
+          class: "px-3 py-2 rounded-md #{current_page?(calendar_path) ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 hover:text-slate-900'}" %>
+    <%= link_to "Requests", requests_path,
+          class: "px-3 py-2 rounded-md #{current_page?(requests_path) ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 hover:text-slate-900'}" %>
+    <%= link_to "Liaisons", liaisons_path,
+          class: "px-3 py-2 rounded-md #{current_page?(liaisons_path) ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 hover:text-slate-900'}" %>
+    <%= link_to "Settings", edit_settings_path,
+          class: "px-3 py-2 rounded-md #{current_page?(edit_settings_path) ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 hover:text-slate-900'}" %>
+  </nav>
+
+  <div class="flex-1"></div>
+
+  <%= link_to new_event_path, class: "flex items-center gap-1.5 bg-lime-400 hover:bg-lime-500 text-brand-900 text-[13px] font-semibold px-3.5 py-2 rounded-md shadow-sm shadow-lime-400/30" do %>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    New event request
+  <% end %>
+
+  <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+    <div class="w-8 h-8 rounded-full bg-brand-700 text-white text-[12px] font-semibold flex items-center justify-center">
+      <%= Current.user.initials %>
+    </div>
+    <div class="leading-tight">
+      <p class="text-[13px] font-medium text-slate-900"><%= Current.user.short_name %></p>
+      <p class="text-[11px] text-slate-500"><%= Current.user.job_title %></p>
+    </div>
+  </div>
+</header>
