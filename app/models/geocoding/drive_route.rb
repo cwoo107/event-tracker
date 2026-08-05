@@ -15,7 +15,7 @@ module Geocoding
     OPEN_TIMEOUT = 5
     READ_TIMEOUT = 5
 
-    def initialize(origin:, destination:, access_token: Rails.application.credentials.dig(:mapbox, :access_token))
+    def initialize(origin:, destination:, access_token: AppCredentials.mapbox_access_token)
       @origin = origin
       @destination = destination
       @access_token = access_token

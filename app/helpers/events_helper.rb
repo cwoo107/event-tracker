@@ -63,7 +63,7 @@ module EventsHelper
   end
 
   def mapbox_access_token
-    Rails.application.credentials.dig(:mapbox, :access_token)
+    AppCredentials.mapbox_access_token
   end
 
   # Shared Tailwind classes for the intake form's text/select/number inputs,

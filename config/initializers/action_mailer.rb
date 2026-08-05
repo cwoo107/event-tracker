@@ -4,7 +4,17 @@
 # domain -> SMTP credentials in the Mailgun dashboard), so don't reuse an
 # API key here.
 #
-# Add to credentials (bin/rails credentials:edit):
+# Every value here resolves through AppCredentials, which checks an
+# environment variable first (set via a platform dashboard - Hatchbox,
+# Heroku, etc. - no server access needed) before falling back to Rails
+# encrypted credentials. Set whichever fits how you deploy:
+#
+#   MAILGUN_SMTP_DOMAIN=mg.yourdomain.com
+#   MAILGUN_SMTP_USERNAME=postmaster@mg.yourdomain.com
+#   MAILGUN_SMTP_PASSWORD=your-smtp-password
+#   APP_HOST=events.yourdomain.com
+#
+# ...or, for local development, in Rails credentials:
 #   mailgun:
 #     domain: mg.yourdomain.com
 #     smtp_username: postmaster@mg.yourdomain.com
@@ -18,7 +28,7 @@
 # guessing at their current contents and risking overwriting something.
 Rails.application.configure do
   config.action_mailer.default_url_options = {
-    host: Rails.application.credentials.dig(:app, :host) || "localhost:3000",
+    host: AppCredentials.app_host || "localhost:3000",
     protocol: Rails.env.production? ? "https" : "http"
   }
 
@@ -30,9 +40,9 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     address: "smtp.mailgun.org",
     port: 587,
-    domain: Rails.application.credentials.dig(:mailgun, :domain),
-    user_name: Rails.application.credentials.dig(:mailgun, :smtp_username),
-    password: Rails.application.credentials.dig(:mailgun, :smtp_password),
+    domain: AppCredentials.mailgun_domain,
+    user_name: AppCredentials.mailgun_smtp_username,
+    password: AppCredentials.mailgun_smtp_password,
     authentication: :plain,
     enable_starttls_auto: true
   }
