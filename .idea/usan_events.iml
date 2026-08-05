@@ -124,6 +124,8 @@
     <orderEntry type="library" scope="PROVIDED" name="rake (v13.4.2, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rbs (v4.1.2, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rdoc (v8.0.0, rbenv: 4.0.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="redis (v5.4.1, rbenv: 4.0.0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="redis-client (v0.30.0, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="regexp_parser (v2.12.0, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="reline (v0.6.3, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rexml (v3.4.4, rbenv: 4.0.0) [gem]" level="application" />
@@ -145,7 +147,6 @@
     <orderEntry type="library" scope="PROVIDED" name="securerandom (v0.4.1, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="selenium-webdriver (v4.46.0, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="solid_cable (v4.0.2, rbenv: 4.0.0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="solid_cache (v1.0.10, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="solid_queue (v1.6.0, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sshkit (v1.25.1, rbenv: 4.0.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="stimulus-rails (v1.3.4, rbenv: 4.0.0) [gem]" level="application" />
@@ -216,7 +217,6 @@
         <option value="script" />
         <option value="solid_cable:install" />
         <option value="solid_cable:update" />
-        <option value="solid_cache:install" />
         <option value="solid_queue:install" />
         <option value="solid_queue:update" />
         <option value="stimulus" />
@@ -268,7 +268,6 @@
         <option value="script" />
         <option value="solid_cable:install" />
         <option value="solid_cable:update" />
-        <option value="solid_cache:install" />
         <option value="solid_queue:install" />
         <option value="solid_queue:update" />
         <option value="stimulus" />
@@ -566,11 +565,6 @@
             <subtasks>
               <RakeTaskImpl description="Copy over the schema and set cable adapter for Solid Cable" fullCommand="solid_cable:install" id="install" />
               <RakeTaskImpl description="" fullCommand="solid_cable:update" id="update" />
-            </subtasks>
-          </RakeTaskImpl>
-          <RakeTaskImpl id="solid_cache">
-            <subtasks>
-              <RakeTaskImpl description="Copy over the migration, and set cache" fullCommand="solid_cache:install" id="install" />
             </subtasks>
           </RakeTaskImpl>
           <RakeTaskImpl id="solid_queue">
