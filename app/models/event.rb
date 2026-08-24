@@ -1,9 +1,4 @@
 class Event < ApplicationRecord
-  # 4005 Port Chicago Hwy, Concord, CA 94520 - the single fixed origin every
-  # drive-time/distance figure is measured from, regardless of which
-  # liaison ends up assigned.
-  OFFICE_LOCATION = RGeo::Geographic.spherical_factory(srid: 4326).point(-122.0247, 38.0116)
-
   # How early a liaison is expected to arrive relative to the event's
   # start time - the arrival target Geocoding::DriveRoute solves backward
   # from when computing traffic-aware drive time/distance/route (see
@@ -29,6 +24,8 @@ class Event < ApplicationRecord
 
   enum :status, { unassigned: 0, assigned: 1, completed: 2, cancelled: 3 }, default: :unassigned
   enum :source, { public_form: 0, member_portal: 1, manual: 2 }, default: :manual
+
+  belongs_to :account
 
   # No liaison_id here: an event's current liaison(s) are its active
   # assignments. Almost always exactly one, but the co-staffing hard rule
@@ -58,7 +55,6 @@ class Event < ApplicationRecord
   scope :near, ->(point, meters) do
     where("ST_DWithin(location, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)", point.x, point.y, meters)
   end
-  scope :near_office, ->(meters) { near(OFFICE_LOCATION, meters) }
   scope :in_week_of, ->(date) do
     week_start = date.to_date.beginning_of_week
     where(starts_at: week_start.beginning_of_day..(week_start + 6.days).end_of_day)
@@ -109,23 +105,26 @@ class Event < ApplicationRecord
     drive_distance_meters && (drive_distance_meters / 1609.344).round(1)
   end
 
-  # Calls Mapbox for the one-way drive route from the office to this
-  # event's location under predicted traffic for arriving DRIVE_ARRIVAL_BUFFER
-  # before starts_at, and persists the result, including the route geometry
-  # so the map can draw the actual driving line without calling Mapbox
-  # again on every view. Deliberately not an after_save callback - it's
-  # enqueued via RefreshDriveTimeJob after a successful create, or an
-  # update that changed the location (see EventsController), so every
-  # other way an Event gets created (factories, specs, db/seeds/
-  # historical_events.rb) stays fast and offline, and doesn't need Mapbox
-  # stubbed to run. Silently leaves drive_distance_meters/drive_time_seconds/
-  # drive_route_geometry unchanged if Mapbox can't be reached or has
-  # nothing useful to say - see Geocoding::DriveRoute.
+  # Calls Mapbox for the one-way drive route from the account's home
+  # office (Account#office_location, set on the Settings screen) to this
+  # event's location under predicted traffic for arriving
+  # DRIVE_ARRIVAL_BUFFER before starts_at, and persists the result,
+  # including the route geometry so the map can draw the actual driving
+  # line without calling Mapbox again on every view. Deliberately not an
+  # after_save callback - it's enqueued via RefreshDriveTimeJob after a
+  # successful create, or an update that changed the location (see
+  # EventsController), so every other way an Event gets created
+  # (factories, specs, db/seeds/historical_events.rb) stays fast and
+  # offline, and doesn't need Mapbox stubbed to run. Silently leaves
+  # drive_distance_meters/drive_time_seconds/drive_route_geometry
+  # unchanged if Mapbox can't be reached or has nothing useful to say -
+  # see Geocoding::DriveRoute - or if the account hasn't set an office
+  # location yet.
   def refresh_drive_time!
-    return unless location && starts_at
+    return unless location && starts_at && account.office_location
 
     route = Geocoding::DriveRoute.new(
-      origin: OFFICE_LOCATION, destination: location, arrive_by: starts_at - DRIVE_ARRIVAL_BUFFER
+      origin: account.office_location, destination: location, arrive_by: starts_at - DRIVE_ARRIVAL_BUFFER
     )
     return unless route.found?
 
@@ -156,7 +155,7 @@ class Event < ApplicationRecord
   # Advisory helpers reflecting the co-staffing hard rule - enforcement
   # belongs to the scoring engine, these just expose the current state.
   def requires_second_liaison?
-    estimated_attendees.to_i > (AssignmentRule.threshold_for("co_staffing_attendee_threshold") || 500)
+    estimated_attendees.to_i > (account.assignment_rules.threshold_for("co_staffing_attendee_threshold") || 500)
   end
 
   def co_staffed?

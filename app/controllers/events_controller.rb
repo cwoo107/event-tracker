@@ -5,7 +5,7 @@ class EventsController < ApplicationController
   # selected event's detail panel, filtered by the sidebar's search/type form.
   def map
     load_sidebar_events
-    @selected_event = Event.includes(detail_includes).find(params[:event_id]) if params[:event_id].present?
+    @selected_event = Current.account.events.includes(detail_includes).find(params[:event_id]) if params[:event_id].present?
   end
 
   # GET /events/:id - same screen with this event pre-selected. Rendering
@@ -20,11 +20,11 @@ class EventsController < ApplicationController
   end
 
   def new
-    @event = Event.new(prep_minutes: 30, teardown_minutes: 30, state: "CA")
+    @event = Current.account.events.new(prep_minutes: 30, teardown_minutes: 30, state: "CA")
   end
 
   def create
-    @event = Event.new(event_params)
+    @event = Current.account.events.new(event_params)
 
     if @event.save
       RefreshDriveTimeJob.perform_later(@event.id)
@@ -76,14 +76,14 @@ class EventsController < ApplicationController
   # excludes whoever's currently assigned from the pool either way, since
   # neither reassigning to nor adding the incumbent makes sense.
   def candidates
-    pool = Liaison.active
+    pool = Current.account.liaisons.active
     pool = pool.where.not(id: @event.liaisons.select(:id)) if @event.liaisons.any?
 
     @selected_event = @event
     @viewing_candidates = true
     @candidate_mode = params[:mode] == "add" ? "add" : "reassign"
     @ranking = Scoring::Ranking.new(@event, pool: pool)
-    @weights = ScoringWeight.current
+    @weights = Current.account.scoring_weights.current
     load_sidebar_events
     render :map
   end
@@ -112,8 +112,8 @@ class EventsController < ApplicationController
   # mode=add keeps whoever's already assigned (co-staffing); anything else
   # replaces them, matching the "Reassign" link's behavior.
   def assign_candidate
-    liaison = Liaison.find(params[:liaison_id])
-    candidate = Scoring::Ranking.new(@event, pool: Liaison.where(id: liaison.id)).candidates.first
+    liaison = Current.account.liaisons.find(params[:liaison_id])
+    candidate = Scoring::Ranking.new(@event, pool: Current.account.liaisons.where(id: liaison.id)).candidates.first
 
     assignment =
       if params[:mode] == "add" || @event.liaisons.empty?
@@ -141,7 +141,7 @@ class EventsController < ApplicationController
   private
 
   def set_event
-    @event = Event.includes(detail_includes).find(params[:id])
+    @event = Current.account.events.includes(detail_includes).find(params[:id])
   end
 
   def event_params
@@ -162,7 +162,7 @@ class EventsController < ApplicationController
   # it, since that means "wasn't handed out" rather than "handed out zero."
   def sync_material_items!
     (params[:materials] || {}).each do |material_item_id, attrs|
-      material = MaterialItem.find_by(id: material_item_id)
+      material = Current.account.material_items.find_by(id: material_item_id)
       next unless material
 
       if ActiveModel::Type::Boolean.new.cast(attrs[:checked])
@@ -179,7 +179,7 @@ class EventsController < ApplicationController
   end
 
   def load_sidebar_events
-    scope = Event.includes(:liaisons)
+    scope = Current.account.events.includes(:liaisons)
     scope = scope.where(event_type: params[:type]) if params[:type].present? && params[:type] != "all"
     if params[:q].present?
       scope = scope.where("title ILIKE :q OR city ILIKE :q OR county ILIKE :q", q: "%#{params[:q]}%")
@@ -188,7 +188,7 @@ class EventsController < ApplicationController
     @unassigned_events = scope.unassigned.order(:starts_at)
     @assigned_events = scope.assigned.order(:starts_at)
     @completed_events = scope.completed.order(starts_at: :desc)
-    @liaisons = Liaison.active.includes(:user).order(:region)
+    @liaisons = Current.account.liaisons.active.includes(:user).order(:region)
   end
 
   def detail_includes

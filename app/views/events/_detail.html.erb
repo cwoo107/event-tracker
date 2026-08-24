@@ -150,3 +150,11 @@
     <% end %>
   </div>
 </div>
+
+<% unless event.completed? || event.cancelled? %>
+  <div class="p-4 flex justify-end">
+    <%= button_to "Complete", complete_event_path(event), method: :post,
+          data: { turbo_frame: "_top", turbo_confirm: "Mark this event as completed?" },
+          class: "text-[13px] font-semibold text-white bg-brand-700 hover:bg-brand-800 rounded-md px-4 py-2 border-0 cursor-pointer" %>
+  </div>
+<% end %>

@@ -54,7 +54,7 @@
     <div class="border border-slate-200 rounded-lg p-3 bg-white">
       <p class="text-[11px] text-slate-400">This week</p>
       <p class="text-[18px] font-semibold text-slate-900">
-        <%= liaison.events_in_week(Date.current).count %> / <%= AssignmentSetting.current.weekly_target %>
+        <%= liaison.events_in_week(Date.current).count %> / <%= AssignmentSetting.for(Current.account).weekly_target %>
       </p>
     </div>
     <div class="border border-slate-200 rounded-lg p-3 bg-white">
@@ -103,7 +103,7 @@
                 data-bar-chart-colors-value="<%= chart_data[:colors].to_json %>"></canvas>
       </div>
       <p class="text-[11px] text-slate-400 mt-1">
-        Red bars exceed the <%= AssignmentSetting.current.weekly_target %>-event weekly target.
+        Red bars exceed the <%= AssignmentSetting.for(Current.account).weekly_target %>-event weekly target.
       </p>
     </div>
   </div>

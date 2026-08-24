@@ -1,8 +1,10 @@
 <div id="site-map-wrapper"
      data-controller="mapbox"
      data-mapbox-access-token-value="<%= mapbox_access_token %>"
-     data-mapbox-office-lng-value="<%= Event::OFFICE_LOCATION.x %>"
-     data-mapbox-office-lat-value="<%= Event::OFFICE_LOCATION.y %>"
+     <% if Current.account.office_location %>
+       data-mapbox-office-lng-value="<%= Current.account.office_longitude %>"
+       data-mapbox-office-lat-value="<%= Current.account.office_latitude %>"
+     <% end %>
      data-mapbox-events-value="<%= events_for_map(@unassigned_events + @assigned_events + @completed_events).to_json %>"
      data-mapbox-selected-id-value="<%= @selected_event&.id %>"
      data-mapbox-selected-route-value="<%= @selected_event&.drive_route_geometry.to_json %>"
@@ -37,7 +39,7 @@
 
   <div style="position: absolute; bottom: 16px; left: 16px; pointer-events: none;"
        class="bg-white/95 backdrop-blur border border-slate-200 rounded-xl shadow-sm px-3 py-2 flex items-center gap-4 text-[12px]">
-    <div><p class="text-slate-400">HQ</p><p class="font-medium text-slate-700">4005 Port Chicago Hwy</p></div>
+    <div><p class="text-slate-400">HQ</p><p class="font-medium text-slate-700"><%= Current.account.office_address || link_to("Set home office", edit_settings_path, class: "underline", style: "pointer-events: auto;") %></p></div>
     <div class="h-6 w-px bg-slate-200"></div>
     <div><p class="text-slate-400">Radius rings</p><p class="font-medium text-slate-700">45 / 90 / 150 min (approx.)</p></div>
   </div>

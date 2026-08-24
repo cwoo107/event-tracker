@@ -10,10 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "postgis"
+
+  create_table "accounts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.string "office_address"
+    t.string "office_city"
+    t.geography "office_location", limit: {srid: 4326, type: "st_point", geographic: true}
+    t.string "office_state", default: "CA"
+    t.string "office_zip"
+    t.datetime "updated_at", null: false
+  end
 
   create_table "activities", force: :cascade do |t|
     t.string "action", null: false
@@ -28,22 +39,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
   end
 
   create_table "assignment_rules", force: :cascade do |t|
+    t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.boolean "enabled", default: true, null: false
     t.string "key", null: false
     t.decimal "threshold", precision: 8, scale: 2
     t.datetime "updated_at", null: false
     t.bigint "updated_by_id"
-    t.index ["key"], name: "index_assignment_rules_on_key", unique: true
+    t.index ["account_id", "key"], name: "index_assignment_rules_on_account_id_and_key", unique: true
+    t.index ["account_id"], name: "index_assignment_rules_on_account_id"
     t.index ["updated_by_id"], name: "index_assignment_rules_on_updated_by_id"
   end
 
   create_table "assignment_settings", force: :cascade do |t|
+    t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "updated_by_id"
     t.integer "weekly_target", default: 2, null: false
     t.integer "work_weeks_per_year", default: 46, null: false
+    t.index ["account_id"], name: "index_assignment_settings_on_account_id", unique: true
     t.index ["updated_by_id"], name: "index_assignment_settings_on_updated_by_id"
   end
 
@@ -82,6 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
   end
 
   create_table "events", force: :cascade do |t|
+    t.bigint "account_id", null: false
     t.string "address"
     t.string "audience"
     t.string "city"
@@ -109,6 +125,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
     t.datetime "updated_at", null: false
     t.string "venue_name"
     t.string "zip"
+    t.index ["account_id"], name: "index_events_on_account_id"
     t.index ["county"], name: "index_events_on_county"
     t.index ["event_type"], name: "index_events_on_event_type"
     t.index ["location"], name: "index_events_on_location", using: :gist
@@ -142,6 +159,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
   end
 
   create_table "liaisons", force: :cascade do |t|
+    t.bigint "account_id", null: false
     t.boolean "active", default: true, null: false
     t.string "color", null: false
     t.datetime "created_at", null: false
@@ -150,16 +168,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
     t.string "skills", default: [], null: false, array: true
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["account_id", "color"], name: "index_liaisons_on_account_id_and_color", unique: true
+    t.index ["account_id"], name: "index_liaisons_on_account_id"
     t.index ["user_id"], name: "index_liaisons_on_user_id", unique: true
   end
 
   create_table "material_items", force: :cascade do |t|
+    t.bigint "account_id", null: false
     t.boolean "active", default: true, null: false
     t.string "category"
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_material_items_on_name", unique: true
+    t.index ["account_id", "name"], name: "index_material_items_on_account_id_and_name", unique: true
+    t.index ["account_id"], name: "index_material_items_on_account_id"
   end
 
   create_table "notes", force: :cascade do |t|
@@ -174,23 +196,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
   end
 
   create_table "risk_thresholds", force: :cascade do |t|
+    t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.boolean "enabled", default: true, null: false
     t.string "key", null: false
     t.decimal "multiplier", precision: 5, scale: 2, null: false
     t.datetime "updated_at", null: false
     t.bigint "updated_by_id"
-    t.index ["key"], name: "index_risk_thresholds_on_key", unique: true
+    t.index ["account_id", "key"], name: "index_risk_thresholds_on_account_id_and_key", unique: true
+    t.index ["account_id"], name: "index_risk_thresholds_on_account_id"
     t.index ["updated_by_id"], name: "index_risk_thresholds_on_updated_by_id"
   end
 
   create_table "scoring_weights", force: :cascade do |t|
+    t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.string "criterion", null: false
     t.datetime "updated_at", null: false
     t.bigint "updated_by_id"
     t.decimal "weight", precision: 5, scale: 2, null: false
-    t.index ["criterion"], name: "index_scoring_weights_on_criterion", unique: true
+    t.index ["account_id", "criterion"], name: "index_scoring_weights_on_account_id_and_criterion", unique: true
+    t.index ["account_id"], name: "index_scoring_weights_on_account_id"
     t.index ["updated_by_id"], name: "index_scoring_weights_on_updated_by_id"
   end
 
@@ -204,6 +230,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.string "email_address", null: false
     t.string "job_title"
@@ -211,11 +238,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
     t.string "password_digest", null: false
     t.integer "role", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_users_on_account_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
   add_foreign_key "activities", "users", column: "actor_id"
+  add_foreign_key "assignment_rules", "accounts"
   add_foreign_key "assignment_rules", "users", column: "updated_by_id"
+  add_foreign_key "assignment_settings", "accounts"
   add_foreign_key "assignment_settings", "users", column: "updated_by_id"
   add_foreign_key "assignments", "events"
   add_foreign_key "assignments", "liaisons"
@@ -223,13 +253,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_164227) do
   add_foreign_key "event_material_items", "events"
   add_foreign_key "event_material_items", "material_items"
   add_foreign_key "event_material_items", "users", column: "checked_by_id"
+  add_foreign_key "events", "accounts"
   add_foreign_key "liaison_load_holds", "liaisons"
   add_foreign_key "liaison_load_holds", "users", column: "created_by_id"
   add_foreign_key "liaison_time_offs", "liaisons"
+  add_foreign_key "liaisons", "accounts"
   add_foreign_key "liaisons", "users"
+  add_foreign_key "material_items", "accounts"
   add_foreign_key "notes", "events"
   add_foreign_key "notes", "users", column: "author_id"
+  add_foreign_key "risk_thresholds", "accounts"
   add_foreign_key "risk_thresholds", "users", column: "updated_by_id"
+  add_foreign_key "scoring_weights", "accounts"
   add_foreign_key "scoring_weights", "users", column: "updated_by_id"
   add_foreign_key "sessions", "users"
+  add_foreign_key "users", "accounts"
 end

@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   # deliverable, only the routes needed for Authentication#require_authentication
   # (new_session_path) to resolve.
   resource :session, only: [:new, :create, :destroy]
+  resource :registration, only: [:new, :create]
   resources :passwords, param: :token, only: [:new, :create, :edit, :update]
 
   root "events#map"

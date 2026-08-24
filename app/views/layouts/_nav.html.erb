@@ -32,13 +32,22 @@
     New event request
   <% end %>
 
-  <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
-    <div class="w-8 h-8 rounded-full bg-brand-700 text-white text-[12px] font-semibold flex items-center justify-center">
-      <%= Current.user.initials %>
-    </div>
-    <div class="leading-tight">
-      <p class="text-[13px] font-medium text-slate-900"><%= Current.user.short_name %></p>
-      <p class="text-[11px] text-slate-500"><%= Current.user.job_title %></p>
+  <div class="relative pl-3 border-l border-slate-200" data-controller="dropdown">
+    <button type="button" data-action="click->dropdown#toggle"
+            class="flex items-center gap-2.5 rounded-md p-1 -m-1 hover:bg-slate-50 cursor-pointer border-0 bg-transparent">
+      <div class="w-8 h-8 rounded-full bg-brand-700 text-white text-[12px] font-semibold flex items-center justify-center">
+        <%= Current.user.initials %>
+      </div>
+      <div class="leading-tight text-left">
+        <p class="text-[13px] font-medium text-slate-900"><%= Current.user.short_name %></p>
+        <p class="text-[11px] text-slate-500"><%= Current.user.job_title %></p>
+      </div>
+    </button>
+
+    <div data-dropdown-target="panel"
+         class="hidden absolute right-0 top-full mt-1 w-40 bg-white border border-slate-200 rounded-md shadow-lg py-1 z-10">
+      <%= button_to "Log out", session_path, method: :delete,
+            class: "w-full text-left px-3 py-2 text-[13px] text-slate-700 hover:bg-slate-50 bg-transparent border-0 cursor-pointer" %>
     </div>
   </div>
 </header>

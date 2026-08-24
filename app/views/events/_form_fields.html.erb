@@ -55,45 +55,19 @@
   </label>
 </section>
 
-<section class="space-y-4" data-controller="geocoder" data-geocoder-access-token-value="<%= mapbox_access_token %>">
+<section class="space-y-4">
   <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Location</h2>
 
-  <div>
-    <%= f.label :address, class: form_label_class %>
-    <div class="flex gap-2">
-      <%= f.text_field :address, data: { geocoder_target: "query" }, class: form_field_class,
-            placeholder: "550 Main St, Woodland, CA" %>
-      <button type="button" data-action="geocoder#locate"
-              class="px-3 py-2 text-[13px] font-medium text-brand-700 border border-slate-200 rounded-md hover:bg-slate-50 flex-none">
-        Locate
-      </button>
-    </div>
-    <p class="text-[12px] text-slate-400 mt-1" data-geocoder-target="status">Not yet located.</p>
-  </div>
+  <%= render "shared/location_picker",
+        name_for: ->(field) { "event[#{field}]" },
+        address: f.object.address, city: f.object.city, county: f.object.county, show_county: true,
+        state: f.object.state, zip: f.object.zip, latitude: f.object.latitude, longitude: f.object.longitude,
+        address_placeholder: "550 Main St, Woodland, CA" %>
 
   <div>
     <%= f.label :venue_name, class: form_label_class %>
     <%= f.text_field :venue_name, class: form_field_class %>
   </div>
-
-  <div class="grid grid-cols-3 gap-4">
-    <div>
-      <%= f.label :city, class: form_label_class %>
-      <%= f.text_field :city, data: { geocoder_target: "city" }, class: form_field_class %>
-    </div>
-    <div>
-      <%= f.label :county, class: form_label_class %>
-      <%= f.text_field :county, data: { geocoder_target: "county" }, class: form_field_class %>
-    </div>
-    <div>
-      <%= f.label :zip, class: form_label_class %>
-      <%= f.text_field :zip, data: { geocoder_target: "zip" }, class: form_field_class %>
-    </div>
-  </div>
-
-  <%= f.hidden_field :state, value: f.object.state || "CA", data: { geocoder_target: "state" } %>
-  <%= f.hidden_field :latitude, data: { geocoder_target: "latitude" } %>
-  <%= f.hidden_field :longitude, data: { geocoder_target: "longitude" } %>
 </section>
 
 <section class="space-y-4">

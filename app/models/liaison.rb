@@ -16,6 +16,7 @@ class Liaison < ApplicationRecord
     "Nevada"
   ].freeze
 
+  belongs_to :account
   belongs_to :user
   # update_only: true - without it, Rails' nested-attributes machinery
   # only updates the existing associated record when the submitted
@@ -34,10 +35,11 @@ class Liaison < ApplicationRecord
   has_many :current_events, through: :active_assignments, source: :event
   has_many :liaison_load_holds, dependent: :destroy
 
-  validates :color, presence: true, uniqueness: true,
+  validates :color, presence: true, uniqueness: { scope: :account_id },
             format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: "must be a hex color like #1F8A4C" }
   validates :region, inclusion: { in: REGIONS }, allow_blank: true
   validate :user_has_liaison_role
+  before_validation :assign_account_to_user
 
   delegate :email_address, :name, to: :user
   alias_method :display_name, :name
@@ -69,11 +71,11 @@ class Liaison < ApplicationRecord
   end
 
   def available_weeks(year = Date.current.year)
-    [AssignmentSetting.current.work_weeks_per_year - vacation_weeks(year), 0].max
+    [AssignmentSetting.for(account).work_weeks_per_year - vacation_weeks(year), 0].max
   end
 
   def annual_target(year = Date.current.year)
-    AssignmentSetting.current.weekly_target * available_weeks(year)
+    AssignmentSetting.for(account).weekly_target * available_weeks(year)
   end
 
   def active_load_hold
@@ -138,7 +140,7 @@ class Liaison < ApplicationRecord
   # weekly pacing chart. Same shape as DashboardReport#weekly_pacing_series
   # so both can share one chart-data helper.
   def weekly_pacing_history(weeks: 12, reference_date: Date.current)
-    target = AssignmentSetting.current.weekly_target
+    target = AssignmentSetting.for(account).weekly_target
 
     Array.new(weeks) do |i|
       week_start = reference_date.to_date.beginning_of_week - (weeks - 1 - i).weeks
@@ -178,5 +180,13 @@ class Liaison < ApplicationRecord
 
   def user_has_liaison_role
     errors.add(:user, "must have the liaison role") if user && !user.liaison?
+  end
+
+  # accepts_nested_attributes_for builds `user` with no knowledge of this
+  # liaison's account - without this, a liaison created via
+  # Current.account.liaisons.new(user_attributes: {...}) would build a
+  # User with a nil account_id.
+  def assign_account_to_user
+    user.account ||= account if user && account
   end
 end

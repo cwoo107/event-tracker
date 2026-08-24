@@ -1,9 +1,10 @@
 class CalendarMonth
   DayCell = Struct.new(:date, :in_month, :events, keyword_init: true)
 
-  def initialize(year:, month:, pool: Liaison.active)
+  def initialize(account:, year:, month:, pool: nil)
+    @account = account
     @date = Date.new(year, month, 1)
-    @pool = pool.to_a
+    @pool = (pool || account.liaisons.active).to_a
   end
 
   def year
@@ -49,7 +50,7 @@ class CalendarMonth
 
   def total_slots
     distinct_weeks = weeks.size
-    @pool.size * AssignmentSetting.current.weekly_target * distinct_weeks
+    @pool.size * AssignmentSetting.for(@account).weekly_target * distinct_weeks
   end
 
   private
@@ -70,10 +71,10 @@ class CalendarMonth
   end
 
   def events_in_grid(first_grid_day, last_grid_day)
-    Event.includes(:liaisons).where(starts_at: first_grid_day.beginning_of_day..last_grid_day.end_of_day).order(:starts_at)
+    @account.events.includes(:liaisons).where(starts_at: first_grid_day.beginning_of_day..last_grid_day.end_of_day).order(:starts_at)
   end
 
   def events_in_month
-    Event.where(starts_at: @date.beginning_of_month.beginning_of_day..@date.end_of_month.end_of_day)
+    @account.events.where(starts_at: @date.beginning_of_month.beginning_of_day..@date.end_of_month.end_of_day)
   end
 end

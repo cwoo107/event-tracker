@@ -1,5 +1,5 @@
 class DashboardController < ApplicationController
   def index
-    @report = DashboardReport.new(range: params[:range])
+    @report = DashboardReport.new(account: Current.account, range: params[:range])
   end
 end

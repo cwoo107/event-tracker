@@ -26,4 +26,20 @@ module ApplicationHelper
       colors: series.map { |point| point[:over_target] ? "#dc2626" : "#2f7a3e" }
     }
   end
+
+  # Shared by every location-picker field (event address, account home
+  # office) that's only ever filled in by clicking a Mapbox suggestion,
+  # never typed directly - readonly always, but styled grey/disabled
+  # until it actually holds a real geocoded value. The
+  # location-picker Stimulus controller clears this same inline style
+  # (rather than toggling a class) when it fills a field in, so the two
+  # have to stay in sync.
+  def location_field_class
+    "w-full px-3 py-2 text-[13px] rounded-md border border-slate-200 focus:outline-none " \
+      "focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600"
+  end
+
+  def location_field_style(value)
+    "background-color: #f8fafc; color: #94a3b8;" unless value.present?
+  end
 end

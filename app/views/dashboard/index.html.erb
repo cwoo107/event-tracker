@@ -11,9 +11,9 @@
     </div>
   </div>
   <p class="text-[13px] text-slate-500 mb-6">
-    <%= AssignmentSetting.current.work_weeks_per_year %>-week calendar &middot;
-    <%= AssignmentSetting.current.weekly_target %> events per liaison per week &middot;
-    <%= AssignmentSetting.current.work_weeks_per_year * AssignmentSetting.current.weekly_target %> events per liaison annually
+    <%= AssignmentSetting.for(Current.account).work_weeks_per_year %>-week calendar &middot;
+    <%= AssignmentSetting.for(Current.account).weekly_target %> events per liaison per week &middot;
+    <%= AssignmentSetting.for(Current.account).work_weeks_per_year * AssignmentSetting.for(Current.account).weekly_target %> events per liaison annually
     &middot; showing <%= @report.range_label %>
   </p>
 

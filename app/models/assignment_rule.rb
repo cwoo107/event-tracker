@@ -14,9 +14,10 @@ class AssignmentRule < ApplicationRecord
     "co_staffing_attendee_threshold" => "expected attendees above which two liaisons are required"
   }.freeze
 
+  belongs_to :account
   belongs_to :updated_by, class_name: "User", optional: true
 
-  validates :key, presence: true, uniqueness: true, inclusion: { in: KEYS.keys }
+  validates :key, presence: true, uniqueness: { scope: :account_id }, inclusion: { in: KEYS.keys }
 
   scope :enabled, -> { where(enabled: true) }
 

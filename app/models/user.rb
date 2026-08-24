@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   include Initialing
 
+  belongs_to :account
   has_secure_password
   # Stateless, signed, self-expiring tokens - no separate reset_token
   # column to store/clean up. Salted with a slice of the current

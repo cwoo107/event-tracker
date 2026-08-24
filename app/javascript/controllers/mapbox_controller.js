@@ -16,6 +16,14 @@ import { Controller } from "@hotwired/stimulus"
 // it down and reinitializing on every click. Mapbox is only ever given
 // the inner canvas target as its container, never this wrapper, so it
 // can't see or touch the legend/button siblings.
+// Falls back to a wide, zoomed-out view of the continental US when the
+// account hasn't set a home office location yet (Settings -> Home
+// office) - officeLng/officeLat are simply absent from the DOM in that
+// case (see _map_canvas.html.erb), so hasOfficeLngValue/hasOfficeLatValue
+// are how every office-dependent feature below knows to skip itself.
+const FALLBACK_CENTER = [-98.5795, 39.8283]
+const FALLBACK_ZOOM = 3.5
+
 export default class extends Controller {
   static targets = ["canvas"]
   static values = {
@@ -29,25 +37,28 @@ export default class extends Controller {
 
   connect() {
     mapboxgl.accessToken = this.accessTokenValue
+    const hasOffice = this.hasOfficeLngValue && this.hasOfficeLatValue
 
     this.map = new mapboxgl.Map({
       container: this.canvasTarget,
       style: "mapbox://styles/mapbox/light-v11",
-      center: [this.officeLngValue, this.officeLatValue],
-      zoom: 6.3
+      center: hasOffice ? [this.officeLngValue, this.officeLatValue] : FALLBACK_CENTER,
+      zoom: hasOffice ? 6.3 : FALLBACK_ZOOM
     })
 
     this.completedMarkerElements = []
     this.showCompleted = true
 
     this.map.on("load", () => {
-      this.addOfficeMarker()
+      if (hasOffice) {
+        this.addOfficeMarker()
+        this.addRadiusRings()
+      }
       this.addEventMarkers()
-      this.addRadiusRings()
       this.addRouteLayer()
       this.applyRoute(this.selectedRouteValue)
     })
-    this.map.on("move", () => this.positionRadiusRings())
+    if (hasOffice) this.map.on("move", () => this.positionRadiusRings())
 
     // The map wrapper is data-turbo-permanent (see _map_canvas.html.erb),
     // so it - and this controller - survive every Turbo navigation

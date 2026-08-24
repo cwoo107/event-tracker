@@ -4,10 +4,11 @@ class DashboardReport
 
   RANGES = %w[fy quarter last30].freeze
 
-  def initialize(range: "fy", reference_date: Date.current, pool: Liaison.active)
+  def initialize(account:, range: "fy", reference_date: Date.current, pool: nil)
+    @account = account
     @range = RANGES.include?(range) ? range : "fy"
     @reference_date = reference_date
-    @pool = pool.includes(:user).to_a
+    @pool = (pool || account.liaisons.active).includes(:user).to_a
   end
 
   def range
@@ -28,31 +29,31 @@ class DashboardReport
   end
 
   def open_requests_count
-    Event.unassigned.count
+    @account.events.unassigned.count
   end
 
   def assigned_this_week_count
-    Event.in_week_of(@reference_date).assigned.count
+    @account.events.in_week_of(@reference_date).assigned.count
   end
 
   def total_this_week_count
-    Event.in_week_of(@reference_date).count
+    @account.events.in_week_of(@reference_date).count
   end
 
   def average_drive_minutes
-    seconds = Event.counted_toward_load.where(starts_at: since..@reference_date)
-                   .where.not(drive_time_seconds: nil).pluck(:drive_time_seconds)
+    seconds = @account.events.counted_toward_load.where(starts_at: since..@reference_date)
+                      .where.not(drive_time_seconds: nil).pluck(:drive_time_seconds)
     return 0 if seconds.empty?
 
     (seconds.sum / seconds.size / 60.0).round
   end
 
   def weekend_event_count
-    Event.counted_toward_load.weekend.where(starts_at: since..@reference_date).count
+    @account.events.counted_toward_load.weekend.where(starts_at: since..@reference_date).count
   end
 
   def risk_assessment
-    @risk_assessment ||= RiskAssessment.new(pool: @pool, reference_date: @reference_date)
+    @risk_assessment ||= RiskAssessment.new(account: @account, pool: @pool, reference_date: @reference_date)
   end
 
   # Sorted highest-YTD-count first, matching the mockup's per-liaison table.
@@ -74,11 +75,11 @@ class DashboardReport
   # One point per week for the trailing `weeks` weeks - the org-wide
   # equivalent of a single liaison's weekly_pacing_history.
   def weekly_pacing_series(weeks: 12)
-    target = @pool.size * AssignmentSetting.current.weekly_target
+    target = @pool.size * AssignmentSetting.for(@account).weekly_target
 
     Array.new(weeks) do |i|
       week_start = @reference_date.to_date.beginning_of_week - (weeks - 1 - i).weeks
-      count = Event.in_week_of(week_start).counted_toward_load.count
+      count = @account.events.in_week_of(week_start).counted_toward_load.count
       { week_start: week_start, count: count, over_target: count > target }
     end
   end
@@ -104,14 +105,14 @@ class DashboardReport
   # Liaison#region - answers a different question than the method above,
   # and works regardless of whether liaisons have regions on file.
   def events_by_region
-    Event.where(starts_at: since..@reference_date).where.not(status: :cancelled)
-         .group_by { |event| RegionLookup.for(event) || "Unmapped" }
-         .transform_values(&:count)
-         .sort_by { |_, count| -count }
+    @account.events.where(starts_at: since..@reference_date).where.not(status: :cancelled)
+            .group_by { |event| RegionLookup.for(event) || "Unmapped" }
+            .transform_values(&:count)
+            .sort_by { |_, count| -count }
   end
 
   def upcoming_events(limit: 8)
-    Event.upcoming.in_next_days(30).includes(:liaisons).order(:starts_at).limit(limit)
+    @account.events.upcoming.in_next_days(30).includes(:liaisons).order(:starts_at).limit(limit)
   end
 
   def burnout_watch

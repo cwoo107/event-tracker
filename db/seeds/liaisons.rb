@@ -16,6 +16,7 @@
 placeholder_password = "changeme12345"
 
 coordinator = User.find_or_create_by!(email_address: "coordinator@usan.org") do |user|
+  user.account = DEFAULT_ACCOUNT
   user.name = "USAN Program Manager"
   user.job_title = "Program Manager"
   user.role = :admin
@@ -33,6 +34,7 @@ liaison_seed.each do |attrs|
   email = "#{attrs[:slug].tr('_', '.')}@usan.org"
 
   user = User.find_or_create_by!(email_address: email) do |u|
+    u.account = DEFAULT_ACCOUNT
     u.name = attrs[:name]
     u.job_title = "Marketing & Education Liaison"
     u.role = :liaison
@@ -40,6 +42,7 @@ liaison_seed.each do |attrs|
   end
 
   Liaison.find_or_create_by!(user: user) do |liaison|
+    liaison.account = DEFAULT_ACCOUNT
     liaison.region = attrs[:region]
     liaison.color = attrs[:color]
   end
@@ -55,6 +58,7 @@ admin_seed.each do |attrs|
   email = "#{attrs[:slug].tr('_', '.')}@usan.org"
 
   user = User.find_or_create_by!(email_address: email) do |u|
+    u.account = DEFAULT_ACCOUNT
     u.name = attrs[:name]
     u.job_title = "Admin"
     u.role = :admin

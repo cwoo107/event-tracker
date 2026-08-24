@@ -25,7 +25,7 @@
     </div>
   </div>
   <p class="text-[13px] text-slate-500 mb-6">
-    Week <%= @calendar.week_number_range %> of the <%= AssignmentSetting.current.work_weeks_per_year %>-week calendar &middot;
+    Week <%= @calendar.week_number_range %> of the <%= AssignmentSetting.for(Current.account).work_weeks_per_year %>-week calendar &middot;
     <%= @calendar.filled_slots %> of <%= @calendar.total_slots %> weekly slots filled
   </p>
 

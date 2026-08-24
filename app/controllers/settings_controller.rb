@@ -1,12 +1,12 @@
 class SettingsController < ApplicationController
   def edit
-    @form = SettingsForm.load
+    @form = SettingsForm.load(Current.account)
   end
 
   def update
-    @form = SettingsForm.load
+    @form = SettingsForm.load(Current.account)
 
-    if @form.save(settings_params, updated_by: Current.user)
+    if @form.save(settings_params, account: Current.account, updated_by: Current.user)
       redirect_to edit_settings_path, notice: "Settings saved."
     else
       render :edit, status: :unprocessable_entity
@@ -14,7 +14,7 @@ class SettingsController < ApplicationController
   end
 
   def reset
-    SettingsForm.reset_to_defaults!(updated_by: Current.user)
+    SettingsForm.reset_to_defaults!(account: Current.account, updated_by: Current.user)
     redirect_to edit_settings_path, notice: "Restored default weights and rules."
   end
 
@@ -23,6 +23,7 @@ class SettingsController < ApplicationController
   def settings_params
     params.permit(
       :work_weeks_per_year, :weekly_target,
+      :office_address, :office_city, :office_state, :office_zip, :office_latitude, :office_longitude,
       weights: ScoringWeight::CRITERIA,
       rules: AssignmentRule::KEYS.keys.index_with { [:enabled] },
       risk_thresholds: RiskThreshold::DEFAULTS.keys.index_with { %i[enabled multiplier] }

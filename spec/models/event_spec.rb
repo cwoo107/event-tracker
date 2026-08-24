@@ -67,7 +67,7 @@ RSpec.describe Event, type: :model do
       geometry = { "type" => "LineString", "coordinates" => [ [ -122.0247, 38.0116 ], [ -121.4944, 38.5816 ] ] }
       route = instance_double(Geocoding::DriveRoute, found?: true, distance_meters: 80_467, duration_seconds: 5400, geometry: geometry)
       allow(Geocoding::DriveRoute).to receive(:new)
-        .with(origin: Event::OFFICE_LOCATION, destination: event.location, arrive_by: event.starts_at - Event::DRIVE_ARRIVAL_BUFFER)
+        .with(origin: event.account.office_location, destination: event.location, arrive_by: event.starts_at - Event::DRIVE_ARRIVAL_BUFFER)
         .and_return(route)
 
       event.refresh_drive_time!
@@ -86,6 +86,16 @@ RSpec.describe Event, type: :model do
 
       expect(event.reload.drive_distance_meters).to be_nil
       expect(event.drive_route_geometry).to be_nil
+    end
+
+    it "does nothing when the account hasn't set a home office location yet" do
+      account = create(:account, office_latitude: nil, office_longitude: nil)
+      event = create(:event, account: account)
+      expect(Geocoding::DriveRoute).not_to receive(:new)
+
+      event.refresh_drive_time!
+
+      expect(event.reload.drive_distance_meters).to be_nil
     end
   end
 

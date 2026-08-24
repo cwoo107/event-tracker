@@ -12,9 +12,10 @@ class ScoringWeight < ApplicationRecord
     back_to_back_travel
   ].freeze
 
+  belongs_to :account
   belongs_to :updated_by, class_name: "User", optional: true
 
-  validates :criterion, presence: true, uniqueness: true, inclusion: { in: CRITERIA }
+  validates :criterion, presence: true, uniqueness: { scope: :account_id }, inclusion: { in: CRITERIA }
   validates :weight, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
 
   scope :ordered, -> { order(:criterion) }

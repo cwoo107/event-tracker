@@ -1,7 +1,8 @@
 # Imports the historical events from db/seed_data/events.csv and
 # db/seed_data/event_materials.csv - cleaned/mapped from the real event
-# log (MEEventLog-28.xlsx) you provided. Run db/seeds/liaisons.rb and
-# db/seeds/material_items.rb first (db/seeds.rb does this in order).
+# log (MEEventLog-28.xlsx) you provided. Run db/seeds/liaisons.rb first,
+# after DEFAULT_ACCOUNT has been seeded with its material catalog
+# (db/seeds.rb does this in order).
 #
 # A few things worth knowing about this import, since they're judgment
 # calls made on your behalf rather than things the source data actually
@@ -49,8 +50,8 @@ unless File.exist?(events_csv)
 end
 
 coordinator = User.find_by!(email_address: "coordinator@usan.org")
-liaisons_by_slug = Liaison.includes(:user).index_by { |liaison| liaison.user.email_address.split("@").first.tr(".", "_") }
-materials_by_name = MaterialItem.all.index_by(&:name)
+liaisons_by_slug = DEFAULT_ACCOUNT.liaisons.includes(:user).index_by { |liaison| liaison.user.email_address.split("@").first.tr(".", "_") }
+materials_by_name = DEFAULT_ACCOUNT.material_items.index_by(&:name)
 
 materials_by_reference = Hash.new { |hash, key| hash[key] = [] }
 CSV.foreach(materials_csv, headers: true) do |row|
@@ -64,12 +65,12 @@ CSV.foreach(events_csv, headers: true) do |row|
   starts_at = Time.zone.parse("#{row['date']} 09:00")
   ends_at = starts_at + 2.hours
 
-  if Event.exists?(title: row["title"], starts_at: starts_at)
+  if DEFAULT_ACCOUNT.events.exists?(title: row["title"], starts_at: starts_at)
     skipped += 1
     next
   end
 
-  event = Event.create!(
+  event = DEFAULT_ACCOUNT.events.create!(
     title: row["title"],
     event_type: row["event_type"],
     source: :manual,
@@ -127,3 +128,21 @@ CSV.foreach(events_csv, headers: true) do |row|
 end
 
 puts "Imported #{imported} historical events (#{skipped} already present, skipped)."
+
+# Backfills real drive time/distance/route for every event via a live
+# Mapbox call, synchronously - not something seeding does by default
+# (see Event#refresh_drive_time!'s comment on why seeding normally
+# bypasses this entirely), but worth it here so the map has a real
+# route line to show for the demo data instead of only the 8 events
+# that had mileage in the original spreadsheet. Safe to re-run: a
+# failed/rejected lookup for a given event just leaves it as "not yet
+# calculated," same as if this block didn't run at all.
+total = DEFAULT_ACCOUNT.events.count
+puts "Fetching drive time/route from Mapbox for all #{total} events - this makes real API calls and takes a few minutes..."
+with_route = 0
+DEFAULT_ACCOUNT.events.find_each.with_index(1) do |event, index|
+  event.refresh_drive_time!
+  with_route += 1 if event.drive_route_geometry.present?
+  print "\r  #{index}/#{total} (#{with_route} with a route so far)"
+end
+puts "\nGot a route for #{with_route} of #{total} events."

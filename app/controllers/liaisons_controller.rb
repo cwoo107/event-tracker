@@ -11,7 +11,7 @@ class LiaisonsController < ApplicationController
   end
 
   def new
-    @liaison = Liaison.new
+    @liaison = Current.account.liaisons.new
     @liaison.build_user
   end
 
@@ -20,7 +20,7 @@ class LiaisonsController < ApplicationController
   # password-reset email flow anyone else uses, rather than an admin
   # needing to invent and communicate a temporary one.
   def create
-    @liaison = Liaison.new(liaison_params)
+    @liaison = Current.account.liaisons.new(liaison_params)
     @liaison.build_user unless @liaison.user
     @liaison.user.role = :liaison
     @liaison.user.password = SecureRandom.hex(20)
@@ -67,7 +67,7 @@ class LiaisonsController < ApplicationController
   private
 
   def set_liaison
-    @liaison = Liaison.find(params[:id])
+    @liaison = Current.account.liaisons.find(params[:id])
   end
 
   def require_admin!
@@ -97,7 +97,7 @@ class LiaisonsController < ApplicationController
   end
 
   def load_sidebar_liaisons
-    @liaisons = Liaison.active.includes(:user).order(:region)
-    @risk_assessment = RiskAssessment.new(pool: @liaisons)
+    @liaisons = Current.account.liaisons.active.includes(:user).order(:region)
+    @risk_assessment = RiskAssessment.new(account: Current.account, pool: @liaisons)
   end
 end

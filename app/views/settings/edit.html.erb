@@ -43,6 +43,21 @@
     </section>
 
     <section>
+      <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Home office</h2>
+      <p class="text-[12px] text-slate-500 mb-3">
+        The map centers here, and it's the fixed origin every event's drive time/distance is measured from.
+      </p>
+      <div class="border border-slate-200 rounded-lg p-4">
+        <%= render "shared/location_picker",
+              name_for: ->(field) { "office_#{field}" },
+              address: @form.office_address, city: @form.office_city, county: nil, show_county: false,
+              state: @form.office_state, zip: @form.office_zip,
+              latitude: @form.office_latitude, longitude: @form.office_longitude,
+              address_placeholder: "4005 Port Chicago Hwy, Concord, CA 94520" %>
+      </div>
+    </section>
+
+    <section>
       <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Calendar basis</h2>
       <div class="grid grid-cols-4 gap-3">
         <div class="border border-slate-200 rounded-lg p-3">
@@ -61,7 +76,7 @@
         </div>
         <div class="border border-slate-200 rounded-lg p-3">
           <p class="text-[11px] text-slate-400 mb-1">Active liaisons</p>
-          <p class="text-[15px] font-semibold text-slate-900"><%= Liaison.active.count %></p>
+          <p class="text-[15px] font-semibold text-slate-900"><%= Current.account.liaisons.active.count %></p>
         </div>
       </div>
     </section>

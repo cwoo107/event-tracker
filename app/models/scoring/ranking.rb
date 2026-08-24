@@ -32,9 +32,9 @@ module Scoring
       "weekend_events_annual_cap" => Rules::WeekendAnnualCap
     }.freeze
 
-    def initialize(event, pool: Liaison.active)
+    def initialize(event, pool: nil)
       @event = event
-      @pool = pool.to_a
+      @pool = (pool || event.account.liaisons.active).to_a
     end
 
     def candidates
@@ -75,7 +75,7 @@ module Scoring
     def criterion_args(key)
       case key
       when "drive_time" then { team_average_hours: team_average_drive_hours }
-      when "weekly_load_balance" then { weekly_target: AssignmentSetting.current.weekly_target }
+      when "weekly_load_balance" then { weekly_target: AssignmentSetting.for(@event.account).weekly_target }
       when "weekend_weighting" then { team_average_weekend_load: team_average_weekend_load }
       when "back_to_back_travel" then { long_haul_threshold_miles: long_haul_threshold_miles }
       else {}
@@ -126,15 +126,15 @@ module Scoring
     end
 
     def weights
-      @weights ||= ScoringWeight.current
+      @weights ||= @event.account.scoring_weights.current
     end
 
     def enabled_rules
-      @enabled_rules ||= AssignmentRule.enabled.index_by(&:key)
+      @enabled_rules ||= @event.account.assignment_rules.enabled.index_by(&:key)
     end
 
     def long_haul_threshold_miles
-      @long_haul_threshold_miles ||= AssignmentRule.threshold_for("no_consecutive_long_haul_miles") || 150
+      @long_haul_threshold_miles ||= @event.account.assignment_rules.threshold_for("no_consecutive_long_haul_miles") || 150
     end
 
     def team_average_drive_hours

@@ -38,8 +38,9 @@ class RiskAssessment
   # a flag meant to prompt a coordinator to look closer, not a verdict.
   FALLBACK_MULTIPLIER = 1.3
 
-  def initialize(pool: Liaison.active, reference_date: Date.current)
-    @pool = pool.to_a
+  def initialize(account:, pool: nil, reference_date: Date.current)
+    @account = account
+    @pool = (pool || account.liaisons.active).to_a
     @reference_date = reference_date
   end
 
@@ -113,19 +114,19 @@ class RiskAssessment
   end
 
   def weekly_target
-    @weekly_target ||= AssignmentSetting.current.weekly_target
+    @weekly_target ||= AssignmentSetting.for(@account).weekly_target
   end
 
   def weekend_multiplier
-    @weekend_multiplier ||= RiskThreshold.active_multiplier("weekend_load_multiplier")
+    @weekend_multiplier ||= @account.risk_thresholds.active_multiplier("weekend_load_multiplier")
   end
 
   def drive_multiplier
-    @drive_multiplier ||= RiskThreshold.active_multiplier("drive_burden_multiplier")
+    @drive_multiplier ||= @account.risk_thresholds.active_multiplier("drive_burden_multiplier")
   end
 
   def pace_multiplier
-    @pace_multiplier ||= RiskThreshold.active_multiplier("behind_pace_multiplier")
+    @pace_multiplier ||= @account.risk_thresholds.active_multiplier("behind_pace_multiplier")
   end
 
   def average(values)

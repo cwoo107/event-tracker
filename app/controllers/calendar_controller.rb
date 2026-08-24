@@ -4,7 +4,7 @@ class CalendarController < ApplicationController
     year = params[:year].presence&.to_i || today.year
     month = params[:month].presence&.to_i || today.month
 
-    @calendar = CalendarMonth.new(year: year, month: month)
-    @liaisons = Liaison.active.includes(:user).order(:region)
+    @calendar = CalendarMonth.new(account: Current.account, year: year, month: month)
+    @liaisons = Current.account.liaisons.active.includes(:user).order(:region)
   end
 end

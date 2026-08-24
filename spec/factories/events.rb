@@ -1,5 +1,6 @@
 FactoryBot.define do
   factory :event do
+    account { association :account }
     title { "811 Safety Training" }
     event_type { :direct_presentation }
     status { :unassigned }
@@ -17,7 +18,8 @@ FactoryBot.define do
       status { :assigned }
 
       after(:create) do |event|
-        event.assign_to!(create(:liaison), by: create(:user, :admin), assignment_method: :manual)
+        admin = create(:user, :admin, account: event.account)
+        event.assign_to!(create(:liaison, account: event.account), by: admin, assignment_method: :manual)
       end
     end
 

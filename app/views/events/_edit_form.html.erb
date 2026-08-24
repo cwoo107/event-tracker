@@ -23,7 +23,7 @@
   <section class="space-y-2">
     <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Materials &amp; equipment</h2>
     <div class="divide-y divide-slate-100 border border-slate-200 rounded-lg">
-      <% MaterialItem.active.order(:name).each do |material| %>
+      <% Current.account.material_items.active.order(:name).each do |material| %>
         <% existing = event.event_material_items.find { |item| item.material_item_id == material.id } %>
         <div class="flex items-center gap-2 px-3 py-2">
           <%= check_box_tag "materials[#{material.id}][checked]", "1", existing&.checked? || false,
