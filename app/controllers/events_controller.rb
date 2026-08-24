@@ -27,7 +27,7 @@ class EventsController < ApplicationController
     @event = Event.new(event_params)
 
     if @event.save
-      @event.refresh_drive_time!
+      RefreshDriveTimeJob.perform_later(@event.id)
 
       if params[:assign_to_me] == "1" && Current.user.liaison
         assignment = @event.assign_to!(Current.user.liaison, by: Current.user, assignment_method: :manual)
@@ -57,7 +57,7 @@ class EventsController < ApplicationController
   # just this card.
   def update
     if @event.update(event_params)
-      @event.refresh_drive_time! if @event.saved_change_to_location?
+      RefreshDriveTimeJob.perform_later(@event.id) if @event.saved_change_to_location?
       sync_material_items!
       redirect_to event_path(@event), notice: "Event updated."
     else

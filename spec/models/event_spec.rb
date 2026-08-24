@@ -61,6 +61,34 @@ RSpec.describe Event, type: :model do
     end
   end
 
+  describe "#refresh_drive_time!" do
+    it "persists distance, time, and route geometry from Mapbox" do
+      event = create(:event)
+      geometry = { "type" => "LineString", "coordinates" => [ [ -122.0247, 38.0116 ], [ -121.4944, 38.5816 ] ] }
+      route = instance_double(Geocoding::DriveRoute, found?: true, distance_meters: 80_467, duration_seconds: 5400, geometry: geometry)
+      allow(Geocoding::DriveRoute).to receive(:new)
+        .with(origin: Event::OFFICE_LOCATION, destination: event.location, arrive_by: event.starts_at - Event::DRIVE_ARRIVAL_BUFFER)
+        .and_return(route)
+
+      event.refresh_drive_time!
+
+      expect(event.reload.drive_distance_meters).to eq(80_467)
+      expect(event.drive_time_seconds).to eq(5400)
+      expect(event.drive_route_geometry).to eq(geometry)
+    end
+
+    it "leaves the event unchanged when Mapbox has no route" do
+      event = create(:event)
+      route = instance_double(Geocoding::DriveRoute, found?: false)
+      allow(Geocoding::DriveRoute).to receive(:new).and_return(route)
+
+      event.refresh_drive_time!
+
+      expect(event.reload.drive_distance_meters).to be_nil
+      expect(event.drive_route_geometry).to be_nil
+    end
+  end
+
   describe "#requires_second_liaison?" do
     it "is true above the co-staffing attendee threshold" do
       create(:assignment_rule, key: "co_staffing_attendee_threshold", threshold: 500)

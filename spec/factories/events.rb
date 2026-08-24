@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :event do
     title { "811 Safety Training" }
-    event_type { :safety_training }
+    event_type { :direct_presentation }
     status { :unassigned }
-    source { :internal }
+    source { :manual }
     starts_at { 1.week.from_now.change(hour: 10) }
     ends_at { 1.week.from_now.change(hour: 12) }
     prep_minutes { 30 }

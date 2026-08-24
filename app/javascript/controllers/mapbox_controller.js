@@ -23,7 +23,8 @@ export default class extends Controller {
     officeLng: Number,
     officeLat: Number,
     events: Array,
-    selectedId: String
+    selectedId: String,
+    selectedRoute: String
   }
 
   connect() {
@@ -43,8 +44,19 @@ export default class extends Controller {
       this.addOfficeMarker()
       this.addEventMarkers()
       this.addRadiusRings()
+      this.addRouteLayer()
+      this.applyRoute(this.selectedRouteValue)
     })
     this.map.on("move", () => this.positionRadiusRings())
+
+    // The map wrapper is data-turbo-permanent (see _map_canvas.html.erb),
+    // so it - and this controller - survive every Turbo navigation
+    // untouched; only the event_detail frame actually reloads when a
+    // marker or sidebar row is clicked. Listening here, rather than
+    // relying on selectedRouteValue, is how the route line stays in sync
+    // with whichever event is selected after that first connect().
+    this.frameLoadListener = this.handleDetailFrameLoad.bind(this)
+    document.addEventListener("turbo:frame-load", this.frameLoadListener)
 
     // Mapbox sizes its internal canvas to the container's dimensions at
     // construction time and never rechecks on its own. If layout hasn't
@@ -59,7 +71,43 @@ export default class extends Controller {
 
   disconnect() {
     this.resizeObserver?.disconnect()
+    document.removeEventListener("turbo:frame-load", this.frameLoadListener)
     this.map?.remove()
+  }
+
+  handleDetailFrameLoad(event) {
+    if (event.target.id !== "event_detail") return
+
+    // Turbo Frame navigation only swaps a frame's inner content, never the
+    // <turbo-frame> element's own attributes - so the route geometry has
+    // to be read off a child element (see map.html.erb), not
+    // event.target.dataset directly.
+    const holder = event.target.querySelector("[data-route-geometry]")
+    this.applyRoute(holder?.dataset.routeGeometry)
+  }
+
+  addRouteLayer() {
+    this.map.addSource("drive-route", { type: "geojson", data: { type: "FeatureCollection", features: [] } })
+    this.map.addLayer({
+      id: "drive-route-line",
+      type: "line",
+      source: "drive-route",
+      layout: { "line-join": "round", "line-cap": "round" },
+      paint: { "line-color": "#1f4d2b", "line-width": 3, "line-opacity": 0.75 }
+    })
+  }
+
+  // geometryJson is a GeoJSON LineString geometry, JSON-encoded server-side
+  // from Event#drive_route_geometry - or "null" (or blank) when the
+  // selected event has none yet, which clears the line.
+  applyRoute(geometryJson) {
+    const source = this.map.getSource("drive-route")
+    if (!source) return
+
+    const geometry = geometryJson ? JSON.parse(geometryJson) : null
+    source.setData(
+      geometry ? { type: "Feature", geometry, properties: {} } : { type: "FeatureCollection", features: [] }
+    )
   }
 
   // Pure client-side - every event's data is already in eventsValue from

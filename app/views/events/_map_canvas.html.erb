@@ -5,6 +5,7 @@
      data-mapbox-office-lat-value="<%= Event::OFFICE_LOCATION.y %>"
      data-mapbox-events-value="<%= events_for_map(@unassigned_events + @assigned_events + @completed_events).to_json %>"
      data-mapbox-selected-id-value="<%= @selected_event&.id %>"
+     data-mapbox-selected-route-value="<%= @selected_event&.drive_route_geometry.to_json %>"
      data-turbo-permanent
      style="position: absolute; top: 0; right: 0; bottom: 0; left: 0;">
   <div data-mapbox-target="canvas" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0;"></div>

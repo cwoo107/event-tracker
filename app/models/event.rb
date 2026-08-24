@@ -4,6 +4,13 @@ class Event < ApplicationRecord
   # liaison ends up assigned.
   OFFICE_LOCATION = RGeo::Geographic.spherical_factory(srid: 4326).point(-122.0247, 38.0116)
 
+  # How early a liaison is expected to arrive relative to the event's
+  # start time - the arrival target Geocoding::DriveRoute solves backward
+  # from when computing traffic-aware drive time/distance/route (see
+  # #refresh_drive_time!). Independent of prep_minutes, which is about
+  # setup time once already on site, not travel planning.
+  DRIVE_ARRIVAL_BUFFER = 30.minutes
+
   # The real taxonomy the department actually uses (from the Marketing &
   # Education event log's dropdown), replacing an earlier guess based on
   # the original written spec. office_visit_cold and webinar don't show up
@@ -103,21 +110,30 @@ class Event < ApplicationRecord
   end
 
   # Calls Mapbox for the one-way drive route from the office to this
-  # event's location and persists the result. Deliberately not an
-  # after_save callback - the controller calls this explicitly after a
-  # successful create, or an update that changed the location (see
-  # EventsController), so every other way an Event gets created (factories,
-  # specs, db/seeds/historical_events.rb) stays fast and offline, and
-  # doesn't need Mapbox stubbed to run. Silently leaves drive_distance_meters/
-  # drive_time_seconds unchanged if Mapbox can't be reached or has nothing
-  # useful to say - see Geocoding::DriveRoute.
+  # event's location under predicted traffic for arriving DRIVE_ARRIVAL_BUFFER
+  # before starts_at, and persists the result, including the route geometry
+  # so the map can draw the actual driving line without calling Mapbox
+  # again on every view. Deliberately not an after_save callback - it's
+  # enqueued via RefreshDriveTimeJob after a successful create, or an
+  # update that changed the location (see EventsController), so every
+  # other way an Event gets created (factories, specs, db/seeds/
+  # historical_events.rb) stays fast and offline, and doesn't need Mapbox
+  # stubbed to run. Silently leaves drive_distance_meters/drive_time_seconds/
+  # drive_route_geometry unchanged if Mapbox can't be reached or has
+  # nothing useful to say - see Geocoding::DriveRoute.
   def refresh_drive_time!
-    return unless location
+    return unless location && starts_at
 
-    route = Geocoding::DriveRoute.new(origin: OFFICE_LOCATION, destination: location)
+    route = Geocoding::DriveRoute.new(
+      origin: OFFICE_LOCATION, destination: location, arrive_by: starts_at - DRIVE_ARRIVAL_BUFFER
+    )
     return unless route.found?
 
-    update_columns(drive_distance_meters: route.distance_meters, drive_time_seconds: route.duration_seconds)
+    update_columns(
+      drive_distance_meters: route.distance_meters,
+      drive_time_seconds: route.duration_seconds,
+      drive_route_geometry: route.geometry
+    )
   end
 
   # When a liaison would actually need to leave/get back, accounting for
