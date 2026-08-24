@@ -1,0 +1,48 @@
+<%#
+  Shared by the event form's address section and every "home office"
+  form (Settings, signup). `name_for` builds each field's form `name`
+  attribute (e.g. ->(field) { "event[#{field}]" }) so this one partial
+  works whether the caller's fields are flat (Settings) or nested under
+  a parent key (event[...], account[...]).
+
+  City/county/zip are readonly and only ever filled in by clicking a
+  Mapbox suggestion under the address field - see
+  app/javascript/controllers/location_picker_controller.js. show_county
+  controls whether the county field renders at all (only Event has one).
+%>
+<div data-controller="location-picker" data-location-picker-access-token-value="<%= mapbox_access_token %>"
+     class="relative">
+  <div>
+    <label class="<%= form_label_class %>">Address</label>
+    <%= text_field_tag name_for.call(:address), address, autocomplete: "off",
+          data: { location_picker_target: "query", action: "input->location-picker#search" },
+          class: form_field_class, placeholder: address_placeholder %>
+    <div data-location-picker-target="suggestions"
+         class="hidden absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-56 overflow-auto"></div>
+    <p class="text-[12px] text-slate-400 mt-1">Start typing and pick a suggestion to fill in the fields below.</p>
+  </div>
+
+  <div class="grid <%= show_county ? "grid-cols-3" : "grid-cols-2" %> gap-4 mt-4">
+    <div>
+      <label class="<%= form_label_class %>">City</label>
+      <%= text_field_tag name_for.call(:city), city, readonly: true, data: { location_picker_target: "city" },
+            class: location_field_class, style: location_field_style(city) %>
+    </div>
+    <% if show_county %>
+      <div>
+        <label class="<%= form_label_class %>">County</label>
+        <%= text_field_tag name_for.call(:county), county, readonly: true, data: { location_picker_target: "county" },
+              class: location_field_class, style: location_field_style(county) %>
+      </div>
+    <% end %>
+    <div>
+      <label class="<%= form_label_class %>">Zip</label>
+      <%= text_field_tag name_for.call(:zip), zip, readonly: true, data: { location_picker_target: "zip" },
+            class: location_field_class, style: location_field_style(zip) %>
+    </div>
+  </div>
+
+  <%= hidden_field_tag name_for.call(:state), state || "CA", data: { location_picker_target: "state" } %>
+  <%= hidden_field_tag name_for.call(:latitude), latitude, data: { location_picker_target: "latitude" } %>
+  <%= hidden_field_tag name_for.call(:longitude), longitude, data: { location_picker_target: "longitude" } %>
+</div>
