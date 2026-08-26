@@ -1,4 +1,4 @@
-<% content_for :title, "New event request &middot; USAN Event Liaison Tracker" %>
+<% content_for :title, "New event request | USAN Event Liaison Tracker" %>
 
 <div class="max-w-2xl mx-auto px-6 py-10">
   <h1 class="text-xl font-semibold text-slate-900">New event request</h1>
@@ -20,7 +20,7 @@
 
     <%= render "events/form_fields", f: f %>
 
-    <% if Current.user.liaison %>
+    <% if Current.liaison %>
       <label class="flex items-center gap-2.5 text-[13px] text-slate-700 bg-brand-50 rounded-lg px-3.5 py-3">
         <%= check_box_tag "assign_to_me", "1", false,
               class: "rounded border-slate-300 text-brand-600 focus:ring-brand-600/30" %>

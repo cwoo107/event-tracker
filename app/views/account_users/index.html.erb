@@ -1,0 +1,80 @@
+<% content_for :title, "Account settings | USAN Event Liaison Tracker" %>
+
+<div class="max-w-3xl mx-auto px-6 py-10">
+  <h1 class="text-xl font-semibold text-slate-900">Account settings</h1>
+  <p class="text-[13px] text-slate-500 mt-1 mb-8">
+    Everyone here can sign in and manage this account's events and liaisons. Field liaisons are added from the
+    <%= link_to "Liaisons", liaisons_path, class: "text-brand-700 hover:underline" %> screen instead.
+  </p>
+
+  <section>
+    <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Admins &amp; coordinators</h2>
+    <div class="divide-y divide-slate-100 border border-slate-200 rounded-lg">
+      <% @memberships.each do |membership| %>
+        <% user = membership.user %>
+        <div class="flex items-center gap-3 px-4 py-3">
+          <div class="w-8 h-8 rounded-full bg-brand-700 text-white text-[12px] font-semibold flex items-center justify-center flex-none">
+            <%= user.initials %>
+          </div>
+          <div class="flex-1">
+            <p class="text-[13px] font-medium text-slate-900"><%= user.name %></p>
+            <p class="text-[12px] text-slate-500"><%= user.email_address %></p>
+          </div>
+          <% if user == Current.user %>
+            <span class="text-[11px] font-semibold uppercase tracking-wide px-2 py-1 rounded-md bg-slate-100 text-slate-600">
+              <%= membership.role %>
+            </span>
+            <span class="text-[12px] text-slate-400 w-16 text-right">You</span>
+          <% else %>
+            <%= form_with url: account_user_path(membership), method: :patch, data: { controller: "auto-submit" } do %>
+              <%= select_tag :role, options_for_select(AccountUsersController::MANAGEABLE_ROLES.map { |role| [role.humanize, role] }, membership.role),
+                    data: { action: "change->auto-submit#submit" },
+                    class: "text-[11px] font-semibold uppercase tracking-wide pl-2 pr-1 py-1 rounded-md bg-slate-100 text-slate-600 border-0 cursor-pointer" %>
+            <% end %>
+            <%= button_to "Remove", account_user_path(membership), method: :delete,
+                  data: { turbo_confirm: "Remove #{user.name}'s access to this account?" },
+                  class: "text-[12px] text-slate-400 hover:text-rose-600 bg-transparent border-0 cursor-pointer w-16 text-right" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="mt-8">
+    <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Add a teammate</h2>
+    <p class="text-[12px] text-slate-400 -mt-2 mb-3">
+      If this email already has a USAN Events login (e.g. from another account), they'll just get access to this
+      one too - no new password to set up.
+    </p>
+    <div class="border border-slate-200 rounded-lg p-4">
+      <%= form_with model: @new_user, url: account_users_path, class: "space-y-4" do |f| %>
+        <% if @new_user.errors.any? %>
+          <p class="text-[13px] text-rose-600"><%= @new_user.errors.full_messages.to_sentence %></p>
+        <% end %>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= f.label :name, class: form_label_class %>
+            <%= f.text_field :name, class: form_field_class %>
+          </div>
+          <div>
+            <%= f.label :email_address, "Email", class: form_label_class %>
+            <%= f.email_field :email_address, class: form_field_class %>
+          </div>
+        </div>
+        <div>
+          <%= label_tag :role, "Role", class: form_label_class %>
+          <%= select_tag :role, options_for_select(AccountUsersController::MANAGEABLE_ROLES.map { |role| [role.humanize, role] }),
+                class: form_field_class %>
+        </div>
+        <%= f.submit "Add teammate",
+              class: "bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5 rounded-md cursor-pointer border-0" %>
+      <% end %>
+    </div>
+  </section>
+
+  <%= render "catalog_section", heading: "Event types", items: @event_types, new_item: @new_event_type,
+        add_label: "New event type", item_url: ->(item) { event_type_path(item) }, collection_url: event_types_path %>
+
+  <%= render "catalog_section", heading: "Materials & equipment", items: @material_items, new_item: @new_material_item,
+        add_label: "New material or equipment item", item_url: ->(item) { material_item_path(item) }, collection_url: material_items_path %>
+</div>

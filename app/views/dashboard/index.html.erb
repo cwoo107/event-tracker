@@ -1,4 +1,4 @@
-<% content_for :title, "Dashboard &middot; USAN Event Liaison Tracker" %>
+<% content_for :title, "Dashboard | USAN Event Liaison Tracker" %>
 
 <div class="max-w-6xl mx-auto px-6 py-8">
   <div class="flex items-center justify-between mb-1">
@@ -11,10 +11,10 @@
     </div>
   </div>
   <p class="text-[13px] text-slate-500 mb-6">
-    <%= AssignmentSetting.for(Current.account).work_weeks_per_year %>-week calendar &middot;
-    <%= AssignmentSetting.for(Current.account).weekly_target %> events per liaison per week &middot;
+    <%= AssignmentSetting.for(Current.account).work_weeks_per_year %>-week calendar |
+    <%= AssignmentSetting.for(Current.account).weekly_target %> events per liaison per week |
     <%= AssignmentSetting.for(Current.account).work_weeks_per_year * AssignmentSetting.for(Current.account).weekly_target %> events per liaison annually
-    &middot; showing <%= @report.range_label %>
+    | showing <%= @report.range_label %>
   </p>
 
   <div class="grid grid-cols-5 gap-3 mb-8">
@@ -136,7 +136,7 @@
         <%= link_to event_path(event), class: "flex items-center justify-between px-4 py-2.5 hover:bg-slate-50" do %>
           <div>
             <p class="text-[13px] font-medium text-slate-900"><%= event.title %></p>
-            <p class="text-[11px] text-slate-500"><%= event.city %> &middot; <%= event.starts_at.strftime("%a, %b %-d") %></p>
+            <p class="text-[11px] text-slate-500"><%= event.city %> | <%= event.starts_at.strftime("%a, %b %-d") %></p>
           </div>
           <% if event.liaisons.any? %>
             <% style = marker_style(event) %>

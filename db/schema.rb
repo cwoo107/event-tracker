@@ -10,10 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_184340) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "postgis"
+
+  create_table "account_memberships", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "role", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["account_id", "user_id"], name: "index_account_memberships_on_account_id_and_user_id", unique: true
+    t.index ["account_id"], name: "index_account_memberships_on_account_id"
+    t.index ["user_id"], name: "index_account_memberships_on_user_id"
+  end
 
   create_table "accounts", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -70,6 +81,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_180000) do
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
     t.bigint "liaison_id", null: false
+    t.datetime "reminder_sent_at"
     t.decimal "score", precision: 6, scale: 2
     t.jsonb "score_breakdown", default: {}, null: false
     t.datetime "updated_at", null: false
@@ -96,6 +108,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_180000) do
     t.index ["material_item_id"], name: "index_event_material_items_on_material_item_id"
   end
 
+  create_table "event_types", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "name"], name: "index_event_types_on_account_id_and_name", unique: true
+    t.index ["account_id"], name: "index_event_types_on_account_id"
+  end
+
   create_table "events", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "address"
@@ -108,12 +130,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_180000) do
     t.integer "drive_time_seconds"
     t.datetime "ends_at", null: false
     t.integer "estimated_attendees"
-    t.integer "event_type", null: false
+    t.bigint "event_type_id", null: false
     t.geography "location", limit: {srid: 4326, type: "st_point", geographic: true}, null: false
     t.boolean "overnight_approved", default: false, null: false
     t.integer "prep_minutes", default: 30, null: false
-    t.string "requester_email", null: false
-    t.string "requester_name", null: false
+    t.string "requester_email"
+    t.string "requester_name"
     t.string "requester_organization"
     t.string "requester_phone"
     t.integer "source", default: 2, null: false
@@ -127,7 +149,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_180000) do
     t.string "zip"
     t.index ["account_id"], name: "index_events_on_account_id"
     t.index ["county"], name: "index_events_on_county"
-    t.index ["event_type"], name: "index_events_on_event_type"
+    t.index ["event_type_id"], name: "index_events_on_event_type_id"
     t.index ["location"], name: "index_events_on_location", using: :gist
     t.index ["starts_at"], name: "index_events_on_starts_at"
     t.index ["status"], name: "index_events_on_status"
@@ -221,27 +243,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_180000) do
   end
 
   create_table "sessions", force: :cascade do |t|
+    t.bigint "account_id"
     t.datetime "created_at", null: false
     t.string "ip_address"
     t.datetime "updated_at", null: false
     t.string "user_agent"
     t.bigint "user_id", null: false
+    t.index ["account_id"], name: "index_sessions_on_account_id"
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
-    t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.string "email_address", null: false
     t.string "job_title"
     t.string "name", null: false
     t.string "password_digest", null: false
-    t.integer "role", default: 0, null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_users_on_account_id"
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "account_memberships", "accounts"
+  add_foreign_key "account_memberships", "users"
   add_foreign_key "activities", "users", column: "actor_id"
   add_foreign_key "assignment_rules", "accounts"
   add_foreign_key "assignment_rules", "users", column: "updated_by_id"
@@ -253,7 +276,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_180000) do
   add_foreign_key "event_material_items", "events"
   add_foreign_key "event_material_items", "material_items"
   add_foreign_key "event_material_items", "users", column: "checked_by_id"
+  add_foreign_key "event_types", "accounts"
   add_foreign_key "events", "accounts"
+  add_foreign_key "events", "event_types"
   add_foreign_key "liaison_load_holds", "liaisons"
   add_foreign_key "liaison_load_holds", "users", column: "created_by_id"
   add_foreign_key "liaison_time_offs", "liaisons"
@@ -266,6 +291,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_180000) do
   add_foreign_key "risk_thresholds", "users", column: "updated_by_id"
   add_foreign_key "scoring_weights", "accounts"
   add_foreign_key "scoring_weights", "users", column: "updated_by_id"
+  add_foreign_key "sessions", "accounts"
   add_foreign_key "sessions", "users"
-  add_foreign_key "users", "accounts"
 end

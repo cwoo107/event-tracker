@@ -59,6 +59,15 @@ end
 gem "activerecord-postgis-adapter"
 gem "rgeo"
 gem "csv"
+
+group :development do
+  # Intercepts outgoing mail in development and pops it open in the browser
+  # instead of actually sending it - lets you click through a real delivery
+  # (password reset, assignment notification, event reminder) without a
+  # working SMTP connection. See config/environments/development.rb.
+  gem "letter_opener"
+end
+
 group :development, :test do
   gem "rspec-rails"
   gem "factory_bot_rails"

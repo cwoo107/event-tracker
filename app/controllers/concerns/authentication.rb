@@ -39,8 +39,12 @@ module Authentication
     session.delete(:return_to_after_authenticating) || root_url
   end
 
-  def start_new_session_for(user)
-    user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |new_session|
+  # account: defaults to whichever of the user's accounts they joined
+  # first - login doesn't know which one they mean to work in yet, so
+  # this is just a starting point; they can switch from the account
+  # dropdown once signed in.
+  def start_new_session_for(user, account: user.account_memberships.order(:created_at).first&.account)
+    user.sessions.create!(account: account, user_agent: request.user_agent, ip_address: request.remote_ip).tap do |new_session|
       Current.session = new_session
       cookies.signed.permanent[:session_id] = { value: new_session.id, httponly: true, same_site: :lax }
     end

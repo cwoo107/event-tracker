@@ -13,12 +13,12 @@
     <p class="text-[11px] text-slate-400 flex-none"><%= event.starts_at.strftime("%a, %b %-d") %></p>
   </div>
   <p class="text-[12px] text-slate-500 mt-0.5">
-    <%= event.city %> &middot; <%= event.starts_at.strftime("%H:%M") %>&ndash;<%= event.ends_at.strftime("%H:%M") %>
-    <% if event.drive_time_minutes %> &middot; <%= event.drive_time_minutes %>m drive<% end %>
+    <%= event.city %> | <%= event.starts_at.strftime("%H:%M") %>&ndash;<%= event.ends_at.strftime("%H:%M") %>
+    <% if event.drive_time_minutes %> | <%= event.drive_time_minutes %>m drive<% end %>
   </p>
   <div class="flex items-center justify-between mt-1.5">
     <div class="flex gap-1.5 flex-wrap">
-      <span class="text-[11px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded"><%= event.event_type.humanize %></span>
+      <span class="text-[11px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded"><%= event.event_type.name %></span>
       <% if event.weekend? %>
         <span class="text-[11px] font-medium text-lime-700 bg-lime-100 px-1.5 py-0.5 rounded">Weekend &times;1.5</span>
       <% end %>

@@ -16,12 +16,11 @@
 placeholder_password = "changeme12345"
 
 coordinator = User.find_or_create_by!(email_address: "coordinator@usan.org") do |user|
-  user.account = DEFAULT_ACCOUNT
   user.name = "USAN Program Manager"
   user.job_title = "Program Manager"
-  user.role = :admin
   user.password = placeholder_password
 end
+AccountMembership.find_or_create_by!(user: coordinator, account: DEFAULT_ACCOUNT) { |m| m.role = :admin }
 
 # Real field liaisons (role: liaison + Liaison record)
 liaison_seed = [
@@ -34,15 +33,13 @@ liaison_seed.each do |attrs|
   email = "#{attrs[:slug].tr('_', '.')}@usan.org"
 
   user = User.find_or_create_by!(email_address: email) do |u|
-    u.account = DEFAULT_ACCOUNT
     u.name = attrs[:name]
     u.job_title = "Marketing & Education Liaison"
-    u.role = :liaison
     u.password = placeholder_password
   end
+  AccountMembership.find_or_create_by!(user: user, account: DEFAULT_ACCOUNT) { |m| m.role = :liaison }
 
-  Liaison.find_or_create_by!(user: user) do |liaison|
-    liaison.account = DEFAULT_ACCOUNT
+  Liaison.find_or_create_by!(user: user, account: DEFAULT_ACCOUNT) do |liaison|
     liaison.region = attrs[:region]
     liaison.color = attrs[:color]
   end
@@ -58,15 +55,13 @@ admin_seed.each do |attrs|
   email = "#{attrs[:slug].tr('_', '.')}@usan.org"
 
   user = User.find_or_create_by!(email_address: email) do |u|
-    u.account = DEFAULT_ACCOUNT
     u.name = attrs[:name]
     u.job_title = "Admin"
-    u.role = :admin
     u.password = placeholder_password
   end
 
-  # Ensure role stays admin if the user already existed
-  user.update!(role: :admin, job_title: "Admin") unless user.admin?
+  membership = AccountMembership.find_or_create_by!(user: user, account: DEFAULT_ACCOUNT) { |m| m.role = :admin }
+  membership.update!(role: :admin) unless membership.admin?
 end
 
 puts "Seeded #{User.count} users (#{Liaison.count} liaisons) - coordinator: #{coordinator.email_address}"

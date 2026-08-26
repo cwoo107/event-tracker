@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :event do
     account { association :account }
     title { "811 Safety Training" }
-    event_type { :direct_presentation }
+    event_type { association :event_type, account: account }
     status { :unassigned }
     source { :manual }
     starts_at { 1.week.from_now.change(hour: 10) }

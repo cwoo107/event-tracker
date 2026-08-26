@@ -1,0 +1,23 @@
+Hi <%= @liaison.name.split.first %>,
+
+Just a reminder - <%= @event.title %> is tomorrow, <%= @event.starts_at.strftime("%A, %B %-d") %>.
+
+Arrive by: <%= @event.prep_starts_at.strftime("%A, %B %-d at %-I:%M %p") %>
+Event time: <%= @event.starts_at.strftime("%-I:%M %p") %>-<%= @event.ends_at.strftime("%-I:%M %p") %>
+Location: <%= [@event.venue_name, @event.address, @event.city].select(&:present?).join(", ") %>
+<% if @event.drive_time_minutes -%>
+Drive from HQ: <%= @event.drive_time_minutes %>m (<%= @event.drive_distance_miles %>mi each way)
+<% end -%>
+<% if @event.google_maps_directions_url -%>
+
+Driving directions: <%= @event.google_maps_directions_url %>
+<% end -%>
+<% if @event.event_material_items.any? -%>
+
+Materials & equipment:
+<% @event.event_material_items.each do |item| -%>
+- <%= item.material_item.name %><%= " (#{item.quantity})" if item.quantity.present? %>
+<% end -%>
+<% end -%>
+
+View this event: <%= event_url(@event) %>

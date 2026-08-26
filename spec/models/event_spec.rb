@@ -3,8 +3,12 @@ require "rails_helper"
 RSpec.describe Event, type: :model do
   describe "validations" do
     it { is_expected.to validate_presence_of(:title) }
-    it { is_expected.to validate_presence_of(:requester_name) }
-    it { is_expected.to validate_presence_of(:requester_email) }
+
+    it "allows blank requester fields" do
+      event = build(:event, requester_name: nil, requester_email: nil, requester_organization: nil)
+
+      expect(event).to be_valid
+    end
 
     it "requires ends_at after starts_at" do
       event = build(:event, starts_at: Time.zone.now, ends_at: Time.zone.now - 1.hour)

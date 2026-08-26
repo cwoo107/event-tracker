@@ -10,10 +10,10 @@ module EventsHelper
     STATUS_BG_CLASSES.fetch(event.status, "bg-slate-400")
   end
 
-  # Filter pills on the sidebar - derived from the enum itself so it can't
-  # drift out of sync with Event::event_types.
+  # Filter pills on the sidebar - derived from the account's own EventType
+  # catalog so it can't drift out of sync with what admins have configured.
   def event_type_filter_options
-    [["all", "All types"]] + Event.event_types.keys.map { |key| [key, key.humanize] }
+    [["all", "All types"]] + Current.account.event_types.active.order(:name).pluck(:id, :name).map { |id, name| [id.to_s, name] }
   end
 
   # The one place status + liaison map to a color, so the map markers,

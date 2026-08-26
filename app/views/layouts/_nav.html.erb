@@ -45,9 +45,27 @@
     </button>
 
     <div data-dropdown-target="panel"
-         class="hidden absolute right-0 top-full mt-1 w-40 bg-white border border-slate-200 rounded-md shadow-lg py-1 z-10">
-      <%= button_to "Log out", session_path, method: :delete,
-            class: "w-full text-left px-3 py-2 text-[13px] text-slate-700 hover:bg-slate-50 bg-transparent border-0 cursor-pointer" %>
+         class="hidden absolute right-0 top-full mt-1 w-52 bg-white border border-slate-200 rounded-md shadow-lg py-1 z-10">
+      <% if Current.admin? %>
+        <%= link_to "Account settings", account_users_path,
+              class: "block px-3 py-2 text-[13px] text-slate-700 hover:bg-slate-50" %>
+      <% end %>
+      <% other_accounts = Current.user.accounts.where.not(id: Current.account.id).order(:name) %>
+      <div class="border-t border-slate-100 mt-1 pt-1">
+        <% if other_accounts.any? %>
+          <p class="px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Switch account</p>
+          <% other_accounts.each do |account| %>
+            <%= button_to account.name, account_switches_path(account_id: account.id), method: :post,
+                  class: "w-full text-left px-3 py-2 text-[13px] text-slate-700 hover:bg-slate-50 bg-transparent border-0 cursor-pointer" %>
+          <% end %>
+        <% end %>
+        <%= link_to "+ Create new account", new_account_path,
+              class: "block px-3 py-2 text-[13px] text-slate-700 hover:bg-slate-50" %>
+      </div>
+      <div class="border-t border-slate-100 mt-1 pt-1">
+        <%= button_to "Log out", session_path, method: :delete,
+              class: "w-full text-left px-3 py-2 text-[13px] text-slate-700 hover:bg-slate-50 bg-transparent border-0 cursor-pointer" %>
+      </div>
     </div>
   </div>
 </header>

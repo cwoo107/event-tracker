@@ -22,7 +22,6 @@ class LiaisonsController < ApplicationController
   def create
     @liaison = Current.account.liaisons.new(liaison_params)
     @liaison.build_user unless @liaison.user
-    @liaison.user.role = :liaison
     @liaison.user.password = SecureRandom.hex(20)
 
     if @liaison.save
@@ -38,7 +37,7 @@ class LiaisonsController < ApplicationController
   end
 
   def update
-    permitted = Current.user.admin? ? liaison_params : self_service_liaison_params
+    permitted = Current.admin? ? liaison_params : self_service_liaison_params
 
     if @liaison.update(permitted)
       redirect_to liaison_path(@liaison), notice: "Profile updated."
@@ -71,13 +70,13 @@ class LiaisonsController < ApplicationController
   end
 
   def require_admin!
-    return if Current.user.admin?
+    return if Current.admin?
 
     redirect_to liaisons_path, alert: "Only admins can do that."
   end
 
   def authorize_edit!
-    return if Current.user.admin?
+    return if Current.admin?
     return if @liaison.user_id == Current.user.id
 
     redirect_to liaisons_path, alert: "You can only edit your own profile."

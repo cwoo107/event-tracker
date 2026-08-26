@@ -2,7 +2,7 @@
   <h1 class="text-lg font-semibold text-slate-900 mb-1">
     <%= liaison.persisted? ? "Edit liaison" : "New liaison" %>
   </h1>
-  <% if liaison.persisted? && !Current.user.admin? %>
+  <% if liaison.persisted? && !Current.admin? %>
     <p class="text-[13px] text-slate-500 mb-6">Region, home city, skills, and color are yours to update; ask an admin for anything else.</p>
   <% else %>
     <div class="mb-6"></div>
@@ -47,7 +47,7 @@
       <%= f.color_field :color, class: "h-9 w-16 border border-slate-200 rounded-md cursor-pointer" %>
     </div>
 
-    <% if Current.user.admin? %>
+    <% if Current.admin? %>
       <label class="flex items-center gap-2 text-[13px] text-slate-700">
         <%= f.check_box :active, class: "rounded border-slate-300 text-brand-600 focus:ring-brand-600/30" %>
         Active (eligible for new assignments)

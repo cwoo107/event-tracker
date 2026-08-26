@@ -10,4 +10,5 @@ class Assignment < ApplicationRecord
 
   scope :active, -> { where(active: true) }
   scope :recent_first, -> { order(created_at: :desc) }
+  scope :reminder_not_sent, -> { where(reminder_sent_at: nil) }
 end

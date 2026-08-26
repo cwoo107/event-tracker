@@ -25,7 +25,7 @@
     <tr>
       <td style="padding: 6px 0; color: #64748b; vertical-align: top;">Drive from HQ</td>
       <td style="padding: 6px 0; color: #1e293b; font-weight: 600;">
-        <%= @event.drive_time_minutes %>m &middot; <%= @event.drive_distance_miles %>mi each way
+        <%= @event.drive_time_minutes %>m | <%= @event.drive_distance_miles %>mi each way
       </td>
     </tr>
   <% end %>
@@ -43,7 +43,7 @@
     <td style="padding: 6px 0; color: #64748b; vertical-align: top;">Requester</td>
     <td style="padding: 6px 0; color: #1e293b;">
       <strong><%= @event.requester_organization %></strong><br>
-      <%= @event.requester_name %><%= " &middot; #{@event.requester_phone}".html_safe if @event.requester_phone.present? %><br>
+      <%= @event.requester_name %><%= " | #{@event.requester_phone}".html_safe if @event.requester_phone.present? %><br>
       <%= @event.requester_email %>
     </td>
   </tr>

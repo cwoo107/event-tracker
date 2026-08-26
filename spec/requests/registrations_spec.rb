@@ -14,10 +14,11 @@ RSpec.describe "Registrations", type: :request do
     expect(response).to redirect_to(root_path)
 
     new_account = Account.find_by!(name: "New Org")
-    expect(new_account.users.sole).to be_admin
+    expect(new_account.account_memberships.sole).to be_admin
     expect(new_account.assignment_setting).to be_present
     expect(new_account.scoring_weights.find_by(criterion: "drive_time").weight).to eq(30)
     expect(new_account.material_items.count).to eq(MaterialItem::DEFAULT_CATALOG.size)
+    expect(new_account.event_types.count).to eq(EventType::DEFAULT_CATALOG.size)
 
     # The existing account's own settings are untouched by the new signup
     expect(existing_account.scoring_weights.find_by(criterion: "drive_time").weight).to eq(99)

@@ -25,12 +25,13 @@ class EventsController < ApplicationController
 
   def create
     @event = Current.account.events.new(event_params)
+    apply_requester_defaults!
 
     if @event.save
       RefreshDriveTimeJob.perform_later(@event.id)
 
-      if params[:assign_to_me] == "1" && Current.user.liaison
-        assignment = @event.assign_to!(Current.user.liaison, by: Current.user, assignment_method: :manual)
+      if params[:assign_to_me] == "1" && Current.liaison
+        assignment = @event.assign_to!(Current.liaison, by: Current.user, assignment_method: :manual)
         LiaisonMailer.event_assigned(assignment).deliver_later
         redirect_to event_path(@event), notice: "Event created and assigned to you."
       else
@@ -56,7 +57,10 @@ class EventsController < ApplicationController
   # date, or location show up in the sidebar rows and map markers too, not
   # just this card.
   def update
-    if @event.update(event_params)
+    @event.assign_attributes(event_params)
+    apply_requester_defaults!
+
+    if @event.save
       RefreshDriveTimeJob.perform_later(@event.id) if @event.saved_change_to_location?
       sync_material_items!
       redirect_to event_path(@event), notice: "Event updated."
@@ -144,9 +148,19 @@ class EventsController < ApplicationController
     @event = Current.account.events.includes(detail_includes).find(params[:id])
   end
 
+  # Requester info is optional on the form - a coordinator entering an event
+  # from a phone call or email thread may not have it handy. When left
+  # blank, the event assumes its creator is the contact and their account
+  # is the org, rather than blocking the save.
+  def apply_requester_defaults!
+    @event.requester_name = Current.user.name if @event.requester_name.blank?
+    @event.requester_email = Current.user.email_address if @event.requester_email.blank?
+    @event.requester_organization = Current.account.name if @event.requester_organization.blank?
+  end
+
   def event_params
     params.require(:event).permit(
-      :title, :event_type, :estimated_attendees, :audience,
+      :title, :event_type_id, :estimated_attendees, :audience,
       :starts_at, :ends_at, :prep_minutes, :teardown_minutes,
       :address, :venue_name, :city, :county, :state, :zip, :latitude, :longitude,
       :requester_organization, :requester_name, :requester_email, :requester_phone,
@@ -180,7 +194,7 @@ class EventsController < ApplicationController
 
   def load_sidebar_events
     scope = Current.account.events.includes(:liaisons)
-    scope = scope.where(event_type: params[:type]) if params[:type].present? && params[:type] != "all"
+    scope = scope.where(event_type_id: params[:type]) if params[:type].present? && params[:type] != "all"
     if params[:q].present?
       scope = scope.where("title ILIKE :q OR city ILIKE :q OR county ILIKE :q", q: "%#{params[:q]}%")
     end

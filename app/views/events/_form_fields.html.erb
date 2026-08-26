@@ -8,8 +8,8 @@
 
   <div class="grid grid-cols-2 gap-4">
     <div>
-      <%= f.label :event_type, "Event type", class: form_label_class %>
-      <%= f.select :event_type, Event.event_types.keys.map { |key| [key.humanize, key] },
+      <%= f.label :event_type_id, "Event type", class: form_label_class %>
+      <%= f.select :event_type_id, Current.account.event_types.active.order(:name).pluck(:name, :id),
             { include_blank: "Select a type" }, class: form_field_class %>
     </div>
     <div>
@@ -72,6 +72,9 @@
 
 <section class="space-y-4">
   <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Requester</h2>
+  <p class="text-[12px] text-slate-400 -mt-2">
+    Optional - leave blank to default to you as the contact and your organization.
+  </p>
 
   <div class="grid grid-cols-2 gap-4">
     <div>

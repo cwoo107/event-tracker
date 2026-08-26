@@ -1,7 +1,7 @@
 <div class="<%= status_bg_class(event) %> px-5 py-4 text-white">
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-white/70">
-      <span><%= event.status %></span><span>&middot;</span><span><%= event.reference_code %></span>
+      <span><%= event.status %></span><span>|</span><span><%= event.reference_code %></span>
     </div>
     <div class="flex items-center gap-3">
       <%= link_to "Edit", edit_event_path(event), data: { turbo_frame: "event_detail" },
@@ -28,7 +28,7 @@
     <p class="text-[11px] text-slate-400">Drive from HQ</p>
     <p class="text-[13px] font-medium text-slate-800">
       <% if event.drive_time_minutes %>
-        <%= event.drive_time_minutes %>m &middot; <%= event.drive_distance_miles %>mi each way
+        <%= event.drive_time_minutes %>m | <%= event.drive_distance_miles %>mi each way
       <% else %>
         Not yet calculated
       <% end %>
@@ -62,7 +62,7 @@
         <p class="text-[13px] font-medium text-slate-900"><%= liaison.name %></p>
         <% weekly_count = liaison.events_in_week(event.starts_at).count %>
         <p class="text-[11px] text-slate-500">
-          <%= liaison.home_city.present? ? "based #{liaison.home_city} &middot; ".html_safe : "" %>
+          <%= liaison.home_city.present? ? "based #{liaison.home_city} | ".html_safe : "" %>
           <%= weekly_count %> event<%= "s" unless weekly_count == 1 %> this week
         </p>
       </div>
@@ -73,8 +73,8 @@
     <% if last_assignment %>
       <p class="text-[11px] text-slate-400 mb-2">
         <%= last_assignment.assignment_method.capitalize %>-assigned <%= last_assignment.created_at.strftime("%b %-d") %>
-        <% if last_assignment.score %> &middot; score <%= last_assignment.score.round %><% end %>
-        &middot; <%= last_assignment.assignment_status %>
+        <% if last_assignment.score %> | score <%= last_assignment.score.round %><% end %>
+        | <%= last_assignment.assignment_status %>
       </p>
     <% end %>
   <% end %>
@@ -105,7 +105,7 @@
   <div class="space-y-1 text-[13px]">
     <p class="text-slate-800 font-medium"><%= event.requester_organization %></p>
     <p class="text-slate-500">
-      <%= event.requester_name %><%= " &middot; #{event.requester_phone}".html_safe if event.requester_phone.present? %>
+      <%= event.requester_name %><%= " | #{event.requester_phone}".html_safe if event.requester_phone.present? %>
     </p>
     <p class="text-brand-700"><%= mail_to event.requester_email, nil, class: "hover:underline" %></p>
     <p class="text-slate-400 text-[12px] pt-1">
@@ -137,7 +137,7 @@
     <% recent_activities.each do |activity| %>
       <p class="text-[12px] text-slate-500">
         <span class="text-slate-700 font-medium"><%= activity.actor&.short_name || "System" %></span>
-        <%= activity.action %> &middot; <%= time_ago_in_words(activity.created_at) %> ago
+        <%= activity.action %> | <%= time_ago_in_words(activity.created_at) %> ago
       </p>
     <% end %>
     <% event.notes.to_a.sort_by(&:created_at).reverse_each do |note| %>

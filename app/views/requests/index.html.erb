@@ -1,4 +1,4 @@
-<% content_for :title, "Requests &middot; USAN Event Liaison Tracker" %>
+<% content_for :title, "Requests | USAN Event Liaison Tracker" %>
 
 <div class="max-w-6xl mx-auto px-6 py-8">
   <div class="flex items-center justify-between mb-6">
@@ -35,8 +35,8 @@
             <td class="px-3 py-2.5">
               <%= link_to event.title, event_path(event), class: "font-medium text-slate-900 hover:text-brand-700" %>
               <p class="text-[11px] text-slate-500">
-                <%= event.event_type.humanize %> &middot; <%= event.city %>
-                <%= " &middot; #{event.estimated_attendees} expected".html_safe if event.estimated_attendees.present? %>
+                <%= event.event_type.name %> | <%= event.city %>
+                <%= " | #{event.estimated_attendees} expected".html_safe if event.estimated_attendees.present? %>
               </p>
             </td>
             <td class="px-3 py-2.5">

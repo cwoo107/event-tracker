@@ -39,7 +39,14 @@ class Liaison < ApplicationRecord
             format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: "must be a hex color like #1F8A4C" }
   validates :region, inclusion: { in: REGIONS }, allow_blank: true
   validate :user_has_liaison_role
-  before_validation :assign_account_to_user
+  before_validation :ensure_membership_liaison_role
+  # Persisting the bumped/found membership has to wait until after create:
+  # for a brand-new user (the normal "add a liaison" flow, built via
+  # accepts_nested_attributes_for) user.id doesn't exist yet during
+  # validation, and belongs_to's own autosave only guarantees it's saved
+  # once Liaison itself saves - not before. Running in the same
+  # create transaction still means a rollback if it fails.
+  after_create :persist_membership_for_account
 
   delegate :email_address, :name, to: :user
   alias_method :display_name, :name
@@ -179,14 +186,35 @@ class Liaison < ApplicationRecord
   end
 
   def user_has_liaison_role
-    errors.add(:user, "must have the liaison role") if user && !user.liaison?
+    return unless user && account
+
+    errors.add(:user, "must have the liaison role") unless membership_for_account&.liaison?
   end
 
   # accepts_nested_attributes_for builds `user` with no knowledge of this
   # liaison's account - without this, a liaison created via
   # Current.account.liaisons.new(user_attributes: {...}) would build a
-  # User with a nil account_id.
-  def assign_account_to_user
-    user.account ||= account if user && account
+  # User with no membership to this account at all. Bumps a fresh/default
+  # (coordinator) membership up to liaison; leaves an existing admin's
+  # membership alone rather than downgrading them, which then fails
+  # #user_has_liaison_role below - same as the old code refusing to give
+  # an admin a Liaison profile.
+  def ensure_membership_liaison_role
+    return unless user && account
+
+    membership_for_account.role = :liaison if membership_for_account.coordinator?
+  end
+
+  def persist_membership_for_account
+    membership_for_account&.save!
+  end
+
+  # Memoized so before_validation and the validation that follows it agree
+  # on the same (possibly still-unsaved) membership record, rather than
+  # each independently find_or_initialize_by-ing a fresh, un-bumped one.
+  def membership_for_account
+    return nil unless user && account
+
+    @membership_for_account ||= user.account_memberships.find_or_initialize_by(account_id: account.id)
   end
 end

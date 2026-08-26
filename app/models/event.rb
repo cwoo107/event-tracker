@@ -6,26 +6,14 @@ class Event < ApplicationRecord
   # setup time once already on site, not travel planning.
   DRIVE_ARRIVAL_BUFFER = 30.minutes
 
-  # The real taxonomy the department actually uses (from the Marketing &
-  # Education event log's dropdown), replacing an earlier guess based on
-  # the original written spec. office_visit_cold and webinar don't show up
-  # much in the historical log but are real dropdown options, kept for
-  # completeness.
-  enum :event_type, {
-    direct_presentation: 0,      # presentation at excavator/member/industry association
-    industry_tabling: 1,         # CARCGA, NRCGA, NUCA, etc.
-    industry_networking: 2,      # UCON, CARCGA, NRCGA, or other industry networking events
-    office_visit_cold: 3,        # visited office uninvited to introduce yourself/drop off materials
-    public_outreach_tabling: 4,  # World Ag Expo, sports partnerships, etc.
-    safe_event: 5,               # SAFE - public event hosted by USAN
-    site_visit: 6,               # visited an excavation work site
-    webinar: 7                   # all types
-  }
-
   enum :status, { unassigned: 0, assigned: 1, completed: 2, cancelled: 3 }, default: :unassigned
   enum :source, { public_form: 0, member_portal: 1, manual: 2 }, default: :manual
 
   belongs_to :account
+  # Account-managed catalog (see EventType) - admins add/rename/retire
+  # entries from the account settings screen, replacing what used to be
+  # a fixed enum shared by every account.
+  belongs_to :event_type
 
   # No liaison_id here: an event's current liaison(s) are its active
   # assignments. Almost always exactly one, but the co-staffing hard rule
@@ -39,7 +27,6 @@ class Event < ApplicationRecord
   has_many :activities, as: :subject, dependent: :destroy
 
   validates :title, :starts_at, :ends_at, :location, presence: true
-  validates :requester_name, :requester_email, presence: true
   validates :prep_minutes, :teardown_minutes, numericality: { greater_than_or_equal_to: 0 }
   validate :ends_at_after_starts_at
   before_validation :build_location_from_coordinates
@@ -103,6 +90,21 @@ class Event < ApplicationRecord
 
   def drive_distance_miles
     drive_distance_meters && (drive_distance_meters / 1609.344).round(1)
+  end
+
+  # Plain Google Maps driving-directions link for the reminder email - a
+  # liaison needs turn-by-turn directions in their pocket on the day of,
+  # not the Mapbox route geometry the map view draws (see DriveRoute).
+  # Origin is the account's office when it's set, so the link opens
+  # already routed from HQ; Google Maps falls back to the visitor's
+  # current location when origin is omitted.
+  def google_maps_directions_url
+    return unless latitude && longitude
+
+    params = { api: 1, destination: "#{latitude},#{longitude}", travelmode: "driving" }
+    params[:origin] = "#{account.office_latitude},#{account.office_longitude}" if account.office_location
+
+    "https://www.google.com/maps/dir/?#{params.to_query}"
   end
 
   # Calls Mapbox for the one-way drive route from the account's home

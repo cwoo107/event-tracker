@@ -19,7 +19,7 @@
         <h1 class="text-lg font-semibold text-slate-900"><%= liaison.name %></h1>
         <p class="text-[13px] text-slate-500">
           Marketing &amp; Education Liaison
-          <%= " &middot; based #{liaison.home_city}".html_safe if liaison.home_city.present? %>
+          <%= " | based #{liaison.home_city}".html_safe if liaison.home_city.present? %>
         </p>
         <% if liaison.skills.any? %>
           <div class="flex gap-1.5 mt-2 flex-wrap">
@@ -33,10 +33,10 @@
     <div class="text-right flex-none">
       <p class="text-2xl font-semibold text-slate-900"><%= liaison.ytd_event_count %></p>
       <div class="mt-1"><%= risk_badge(risk) %></div>
-      <% if Current.user.admin? || Current.user.liaison == liaison %>
+      <% if Current.admin? || Current.liaison == liaison %>
         <div class="flex items-center justify-end gap-3 mt-2">
           <%= link_to "Edit", edit_liaison_path(liaison), class: "text-[12px] font-medium text-brand-700 hover:text-brand-800" %>
-          <% if Current.user.admin? %>
+          <% if Current.admin? %>
             <% if liaison.destroyable? %>
               <%= button_to "Delete", liaison_path(liaison), method: :delete,
                     data: { turbo_confirm: "Delete #{liaison.name}? This removes their login too." },
@@ -61,7 +61,7 @@
       <p class="text-[11px] text-slate-400">Weekend days YTD</p>
       <p class="text-[18px] font-semibold text-slate-900">
         <%= liaison.weekend_events_ytd %>
-        <span class="text-[11px] font-normal text-slate-400">&middot; team avg <%= average_weekend.round(1) %></span>
+        <span class="text-[11px] font-normal text-slate-400">| team avg <%= average_weekend.round(1) %></span>
       </p>
     </div>
     <div class="border border-slate-200 rounded-lg p-3 bg-white">
@@ -82,7 +82,7 @@
           <%= link_to event_path(event), class: "block px-3 py-2.5 hover:bg-slate-50" do %>
             <p class="text-[13px] font-medium text-slate-900"><%= event.title %></p>
             <p class="text-[11px] text-slate-500">
-              <%= event.city %> &middot; <%= event.starts_at.strftime("%a, %b %-d") %> &middot;
+              <%= event.city %> | <%= event.starts_at.strftime("%a, %b %-d") %> |
               <%= event.starts_at.strftime("%H:%M") %>&ndash;<%= event.ends_at.strftime("%H:%M") %>
             </p>
           <% end %>

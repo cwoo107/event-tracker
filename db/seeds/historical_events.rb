@@ -70,9 +70,11 @@ CSV.foreach(events_csv, headers: true) do |row|
     next
   end
 
+  event_type = DEFAULT_ACCOUNT.event_types.find_or_create_by!(name: row["event_type"].humanize)
+
   event = DEFAULT_ACCOUNT.events.create!(
     title: row["title"],
-    event_type: row["event_type"],
+    event_type: event_type,
     source: :manual,
     starts_at: starts_at,
     ends_at: ends_at,

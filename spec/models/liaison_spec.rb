@@ -5,12 +5,25 @@ RSpec.describe Liaison, type: :model do
     it { is_expected.to validate_presence_of(:color) }
     it { is_expected.to validate_uniqueness_of(:color) }
 
-    it "requires the underlying user to have the liaison role" do
-      coordinator = create(:user, role: :coordinator)
-      liaison = build(:liaison, user: coordinator)
+    it "does not let an existing admin also become a liaison" do
+      account = create(:account)
+      admin = create(:user)
+      create(:account_membership, user: admin, account: account, role: :admin)
+
+      liaison = build(:liaison, user: admin, account: account)
 
       expect(liaison).not_to be_valid
       expect(liaison.errors[:user]).to include("must have the liaison role")
+    end
+
+    it "bumps a brand-new membership up to the liaison role" do
+      account = create(:account)
+      user = create(:user)
+
+      liaison = create(:liaison, user: user, account: account)
+
+      expect(liaison).to be_valid
+      expect(AccountMembership.find_by(user: user, account: account)).to be_liaison
     end
 
     it "rejects malformed colors" do

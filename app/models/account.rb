@@ -1,8 +1,20 @@
 class Account < ApplicationRecord
-  has_many :users, dependent: :destroy
+  has_many :account_memberships, dependent: :destroy
+  # Deliberately no dependent: :destroy here - a User is shared across
+  # accounts now, so destroying an Account should only remove people's
+  # membership to it (handled by account_memberships' own
+  # dependent: :destroy above), never their login itself.
+  has_many :users, through: :account_memberships
+  # A session is "pinned" to whichever account is currently active (see
+  # Current#account) - if that account goes away, the session pointing at
+  # it has to go too, rather than leaving a dangling reference. The
+  # affected person just signs back in and lands on one of their
+  # remaining accounts.
+  has_many :sessions, dependent: :destroy
   has_many :events, dependent: :destroy
   has_many :liaisons, dependent: :destroy
   has_many :material_items, dependent: :destroy
+  has_many :event_types, dependent: :destroy
   has_many :assignment_rules, dependent: :destroy
   has_many :risk_thresholds, dependent: :destroy
   has_many :scoring_weights, dependent: :destroy
@@ -23,6 +35,7 @@ class Account < ApplicationRecord
   def seed_defaults!
     SettingsForm.reset_to_defaults!(account: self)
     MaterialItem::DEFAULT_CATALOG.each { |name| material_items.find_or_create_by!(name: name) }
+    EventType::DEFAULT_CATALOG.each { |name| event_types.find_or_create_by!(name: name) }
   end
 
   def office_latitude

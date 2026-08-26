@@ -8,15 +8,16 @@ class RegistrationsController < ApplicationController
 
   def create
     @account = Account.new(account_params)
-    @user = @account.users.new(user_params.merge(role: :admin))
+    @user = User.new(user_params)
 
     ActiveRecord::Base.transaction do
       @account.save!
       @user.save!
+      @account.account_memberships.create!(user: @user, role: :admin)
       @account.seed_defaults!
     end
 
-    start_new_session_for(@user)
+    start_new_session_for(@user, account: @account)
     redirect_to root_path, notice: "Welcome! Your account is ready."
   rescue ActiveRecord::RecordInvalid
     render :new, status: :unprocessable_entity

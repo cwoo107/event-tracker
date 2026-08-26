@@ -24,6 +24,11 @@ Rails.application.routes.draw do
   post "settings/reset", to: "settings#reset", as: :reset_settings
 
   resources :liaisons
+  resources :accounts, only: [:new, :create]
+  resources :account_users, only: [:index, :create, :update, :destroy]
+  resources :event_types, only: [:create, :update, :destroy]
+  resources :material_items, only: [:create, :update, :destroy]
+  resources :account_switches, only: [:create], param: :account_id
   get "dashboard", to: "dashboard#index", as: :dashboard
   get "calendar", to: "calendar#index", as: :calendar
   get "requests", to: "requests#index", as: :requests
