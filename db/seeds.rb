@@ -5,7 +5,7 @@
 # what AddOfficeLocationToAccounts backfilled onto the real "USAN"
 # account, so a fresh `db:seed` run reproduces the same starting state
 # as that migration did for the existing database.
-DEFAULT_ACCOUNT = Account.find_or_create_by!(name: "USAN") do |account|
+DEFAULT_ACCOUNT = Account.find_or_create_by!(name: "USAN Marketing & Education") do |account|
   account.office_address = "4005 Port Chicago Hwy"
   account.office_city = "Concord"
   account.office_state = "CA"
