@@ -23,7 +23,6 @@ class SettingsController < ApplicationController
   def settings_params
     params.permit(
       :work_weeks_per_year, :weekly_target,
-      :office_address, :office_city, :office_state, :office_zip, :office_latitude, :office_longitude,
       weights: ScoringWeight::CRITERIA,
       rules: AssignmentRule::KEYS.keys.index_with { [:enabled] },
       risk_thresholds: RiskThreshold::DEFAULTS.keys.index_with { %i[enabled multiplier] }

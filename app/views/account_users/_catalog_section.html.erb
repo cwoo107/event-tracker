@@ -1,35 +1,37 @@
-<section class="mt-8">
-  <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3"><%= heading %></h2>
-  <div class="divide-y divide-slate-100 border border-slate-200 rounded-lg">
-    <% items.each do |item| %>
-      <div class="flex items-center gap-3 px-4 py-3">
-        <p class="flex-1 text-[13px] font-medium text-slate-900"><%= item.name %></p>
-        <span class="text-[11px] font-semibold uppercase tracking-wide px-2 py-1 rounded-md <%= item.active? ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500' %>">
-          <%= item.active? ? "Active" : "Inactive" %>
-        </span>
-        <%= button_to item.active? ? "Deactivate" : "Activate", item_url.call(item),
-              method: :patch, params: { active: !item.active? },
-              class: "text-[12px] font-medium text-slate-500 hover:text-slate-700 bg-transparent border-0 cursor-pointer w-20 text-right" %>
-        <%= button_to "Remove", item_url.call(item), method: :delete,
-              data: { turbo_confirm: "Remove #{item.name}?" },
-              class: "text-[12px] text-slate-400 hover:text-rose-600 bg-transparent border-0 cursor-pointer w-16 text-right" %>
-      </div>
-    <% end %>
-    <% if items.none? %>
-      <p class="px-4 py-3 text-[13px] text-slate-400">Nothing here yet.</p>
-    <% end %>
-  </div>
-
-  <div class="border border-slate-200 rounded-lg p-4 mt-3">
-    <%= form_with model: new_item, url: collection_url, class: "flex items-end gap-3" do |f| %>
-      <% if new_item.errors.any? %>
-        <p class="text-[13px] text-rose-600"><%= new_item.errors.full_messages.to_sentence %></p>
+<%= turbo_frame_tag frame_id do %>
+  <section class="mt-8">
+    <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3"><%= heading %></h2>
+    <div class="divide-y divide-slate-100 border border-slate-200 rounded-lg">
+      <% items.each do |item| %>
+        <div class="flex items-center gap-3 px-4 py-3">
+          <p class="flex-1 text-[13px] font-medium text-slate-900"><%= item.name %></p>
+          <span class="text-[11px] font-semibold uppercase tracking-wide px-2 py-1 rounded-md <%= item.active? ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500' %>">
+            <%= item.active? ? "Active" : "Inactive" %>
+          </span>
+          <%= button_to item.active? ? "Deactivate" : "Activate", item_url.call(item),
+                method: :patch, params: { active: !item.active? },
+                class: "text-[12px] font-medium text-slate-500 hover:text-slate-700 bg-transparent border-0 cursor-pointer w-20 text-right" %>
+          <%= button_to "Remove", item_url.call(item), method: :delete,
+                data: { turbo_confirm: "Remove #{item.name}?" },
+                class: "text-[12px] text-slate-400 hover:text-rose-600 bg-transparent border-0 cursor-pointer w-16 text-right" %>
+        </div>
       <% end %>
-      <div class="flex-1">
-        <%= f.label :name, add_label, class: form_label_class %>
-        <%= f.text_field :name, class: form_field_class %>
-      </div>
-      <%= f.submit "Add", class: "bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5 rounded-md cursor-pointer border-0" %>
-    <% end %>
-  </div>
-</section>
+      <% if items.none? %>
+        <p class="px-4 py-3 text-[13px] text-slate-400">Nothing here yet.</p>
+      <% end %>
+    </div>
+
+    <div class="border border-slate-200 rounded-lg p-4 mt-3">
+      <%= form_with model: new_item, url: collection_url, class: "flex items-end gap-3" do |f| %>
+        <% if new_item.errors.any? %>
+          <p class="text-[13px] text-rose-600"><%= new_item.errors.full_messages.to_sentence %></p>
+        <% end %>
+        <div class="flex-1">
+          <%= f.label :name, add_label, class: form_label_class %>
+          <%= f.text_field :name, class: form_field_class %>
+        </div>
+        <%= f.submit "Add", class: "bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5 rounded-md cursor-pointer border-0" %>
+      <% end %>
+    </div>
+  </section>
+<% end %>

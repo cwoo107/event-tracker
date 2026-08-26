@@ -7,9 +7,10 @@ class LiaisonMailer < ApplicationMailer
     @assignment = assignment
     @event = Event.includes(event_material_items: :material_item).find(assignment.event_id)
     @liaison = assignment.liaison
+    @account = @event.account
 
     mail subject: "You're assigned: #{@event.title} (#{@event.starts_at.strftime('%a, %b %-d')})",
-         to: @liaison.email_address
+         to: @liaison.email_address, from: branded_from(@account)
   end
 
   # Sent by SendEventRemindersJob the day before an event a liaison is
@@ -21,8 +22,9 @@ class LiaisonMailer < ApplicationMailer
     @assignment = assignment
     @event = Event.includes(event_material_items: :material_item).find(assignment.event_id)
     @liaison = assignment.liaison
+    @account = @event.account
 
     mail subject: "Reminder: #{@event.title} is tomorrow (#{@event.starts_at.strftime('%a, %b %-d')})",
-         to: @liaison.email_address
+         to: @liaison.email_address, from: branded_from(@account)
   end
 end

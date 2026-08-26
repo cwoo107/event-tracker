@@ -23,8 +23,7 @@ class SettingsForm
   DEFAULT_WORK_WEEKS_PER_YEAR = 46
   DEFAULT_WEEKLY_TARGET = 2
 
-  attr_accessor :weights, :rules, :risk_thresholds, :work_weeks_per_year, :weekly_target,
-                :office_address, :office_city, :office_state, :office_zip, :office_latitude, :office_longitude
+  attr_accessor :weights, :rules, :risk_thresholds, :work_weeks_per_year, :weekly_target
 
   # Current state, for rendering the edit form - zero-filled for any
   # criterion/rule that's never been saved, rather than requiring the
@@ -35,10 +34,7 @@ class SettingsForm
       rules: AssignmentRule::KEYS.keys.index_with { |key| account.assignment_rules.find_by(key: key) },
       risk_thresholds: RiskThreshold::DEFAULTS.keys.index_with { |key| account.risk_thresholds.find_by(key: key) },
       work_weeks_per_year: AssignmentSetting.for(account).work_weeks_per_year,
-      weekly_target: AssignmentSetting.for(account).weekly_target,
-      office_address: account.office_address, office_city: account.office_city,
-      office_state: account.office_state, office_zip: account.office_zip,
-      office_latitude: account.office_latitude, office_longitude: account.office_longitude
+      weekly_target: AssignmentSetting.for(account).weekly_target
     )
   end
 
@@ -102,12 +98,6 @@ class SettingsForm
         work_weeks_per_year: params[:work_weeks_per_year],
         weekly_target: params[:weekly_target],
         updated_by: updated_by
-      )
-
-      account.update!(
-        office_address: params[:office_address], office_city: params[:office_city],
-        office_state: params[:office_state], office_zip: params[:office_zip],
-        office_latitude: params[:office_latitude], office_longitude: params[:office_longitude]
       )
     end
     true

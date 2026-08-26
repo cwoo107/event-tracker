@@ -26,6 +26,12 @@ RSpec.describe LiaisonMailer, type: :mailer do
       expect(mail.html_part.body.to_s).to include(event.prep_starts_at.strftime("%-I:%M %p"))
     end
 
+    it "brands the from name and footer with the account's own name" do
+      expect(mail["from"].value).to eq("#{account.name} Event Tracker <notifications@usanmarketing.org>")
+      expect(mail.html_part.body.to_s).to include(account.name)
+      expect(mail.html_part.body.to_s).not_to include("USAN")
+    end
+
     context "without an office location on the account" do
       let(:account) { create(:account, office_latitude: nil, office_longitude: nil) }
 

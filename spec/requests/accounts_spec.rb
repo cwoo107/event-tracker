@@ -28,4 +28,31 @@ RSpec.describe "Accounts", type: :request do
     expect(Account.count).to eq(account_count)
     expect(response).to have_http_status(:unprocessable_entity)
   end
+
+  describe "update" do
+    it "lets an admin update the account's home office" do
+      sign_in_as(user)
+
+      patch account_path, params: {
+        account: {
+          office_address: "4005 Port Chicago Hwy", office_city: "Concord", office_state: "CA", office_zip: "94520",
+          office_latitude: "38.0116", office_longitude: "-122.0247"
+        }
+      }
+
+      expect(response).to redirect_to(account_users_path)
+      expect(account.reload.office_city).to eq("Concord")
+    end
+
+    it "blocks a non-admin" do
+      coordinator = create(:user)
+      create(:account_membership, user: coordinator, account: account, role: :coordinator)
+      sign_in_as(coordinator)
+
+      patch account_path, params: { account: { office_city: "Hacked City" } }
+
+      expect(response).to redirect_to(root_path)
+      expect(account.reload.office_city).not_to eq("Hacked City")
+    end
+  end
 end

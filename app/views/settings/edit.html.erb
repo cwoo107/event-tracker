@@ -1,6 +1,6 @@
 <% content_for :title, "Settings | USAN Event Liaison Tracker" %>
 
-<div class="max-w-3xl mx-auto px-6 py-10">
+<div class="max-w-6xl mx-auto px-6 py-10">
   <h1 class="text-xl font-semibold text-slate-900">Assignment engine</h1>
   <p class="text-[13px] text-slate-500 mt-1 mb-8">
     Weights are relative - the engine scores every available liaison against each open event and proposes the
@@ -39,21 +39,6 @@
             <span class="text-[13px] text-slate-700"><%= rule_description(key, rule) %></span>
           </label>
         <% end %>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Home office</h2>
-      <p class="text-[12px] text-slate-500 mb-3">
-        The map centers here, and it's the fixed origin every event's drive time/distance is measured from.
-      </p>
-      <div class="border border-slate-200 rounded-lg p-4">
-        <%= render "shared/location_picker",
-              name_for: ->(field) { "office_#{field}" },
-              address: @form.office_address, city: @form.office_city, county: nil, show_county: false,
-              state: @form.office_state, zip: @form.office_zip,
-              latitude: @form.office_latitude, longitude: @form.office_longitude,
-              address_placeholder: "4005 Port Chicago Hwy, Concord, CA 94520" %>
       </div>
     </section>
 

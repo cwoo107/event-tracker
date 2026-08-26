@@ -1,6 +1,6 @@
 Hi <%= @user.short_name %>,
 
-Someone requested a password reset for your USAN Event Liaison Tracker account. If this was
+Someone requested a password reset for your<%= @account ? " #{@account.name}" : "" %> account. If this was
 you, set a new password here - this link expires in 15 minutes:
 
 <%= edit_password_url(@user.generate_token_for(:password_reset)) %>

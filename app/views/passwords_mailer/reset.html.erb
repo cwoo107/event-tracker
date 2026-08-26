@@ -1,6 +1,6 @@
 <p>Hi <%= @user.short_name %>,</p>
 <p>
-  Someone requested a password reset for your USAN Event Liaison Tracker account. If this was
+  Someone requested a password reset for your<%= @account ? " #{@account.name}" : "" %> account. If this was
   you, set a new password below - this link expires in 15 minutes:
 </p>
 <p style="margin: 24px 0;">

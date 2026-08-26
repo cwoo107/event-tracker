@@ -6,7 +6,7 @@
     <div class="h-8 w-px bg-slate-200 mx-1"></div>
     <div class="leading-tight text-left">
       <p class="text-sm font-semibold text-slate-900">Event tracker</p>
-      <p class="text-[11px] text-slate-500">Marketing &amp; Education </p>
+      <p class="text-[11px] text-slate-500"><%= Current.account.name %></p>
     </div>
   <% end %>
 
@@ -21,7 +21,7 @@
           class: "px-3 py-2 rounded-md #{current_page?(requests_path) ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 hover:text-slate-900'}" %>
     <%= link_to "Liaisons", liaisons_path,
           class: "px-3 py-2 rounded-md #{current_page?(liaisons_path) ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 hover:text-slate-900'}" %>
-    <%= link_to "Settings", edit_settings_path,
+    <%= link_to "Assignment Settings", edit_settings_path,
           class: "px-3 py-2 rounded-md #{current_page?(edit_settings_path) ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-50 hover:text-slate-900'}" %>
   </nav>
 

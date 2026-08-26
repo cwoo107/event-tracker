@@ -25,7 +25,7 @@ class LiaisonsController < ApplicationController
     @liaison.user.password = SecureRandom.hex(20)
 
     if @liaison.save
-      PasswordsMailer.reset(@liaison.user).deliver_later
+      PasswordsMailer.reset(@liaison.user, account: Current.account).deliver_later
       redirect_to liaison_path(@liaison), notice: "Liaison created - a password setup email has been sent."
     else
       load_sidebar_liaisons

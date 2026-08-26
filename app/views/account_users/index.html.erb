@@ -1,6 +1,6 @@
 <% content_for :title, "Account settings | USAN Event Liaison Tracker" %>
 
-<div class="max-w-3xl mx-auto px-6 py-10">
+<div class="max-w-6xl mx-auto px-6 py-10">
   <h1 class="text-xl font-semibold text-slate-900">Account settings</h1>
   <p class="text-[13px] text-slate-500 mt-1 mb-8">
     Everyone here can sign in and manage this account's events and liaisons. Field liaisons are added from the
@@ -8,6 +8,28 @@
   </p>
 
   <section>
+    <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Home office</h2>
+    <p class="text-[12px] text-slate-500 mb-3">
+      The map centers here, and it's the fixed origin every event's drive time/distance is measured from.
+    </p>
+    <div class="border border-slate-200 rounded-lg p-4">
+      <%= form_with model: Current.account, url: account_path, method: :patch, class: "space-y-4" do %>
+        <% if Current.account.errors.any? %>
+          <p class="text-[13px] text-rose-600"><%= Current.account.errors.full_messages.to_sentence %></p>
+        <% end %>
+        <%= render "shared/location_picker",
+              name_for: ->(field) { "account[office_#{field}]" },
+              address: Current.account.office_address, city: Current.account.office_city, county: nil, show_county: false,
+              state: Current.account.office_state, zip: Current.account.office_zip,
+              latitude: Current.account.office_latitude, longitude: Current.account.office_longitude,
+              address_placeholder: "4005 Port Chicago Hwy, Concord, CA 94520" %>
+        <%= submit_tag "Save home office",
+              class: "bg-brand-700 hover:bg-brand-800 text-white text-[13px] font-semibold px-4 py-2.5 rounded-md cursor-pointer border-0" %>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="mt-8">
     <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Admins &amp; coordinators</h2>
     <div class="divide-y divide-slate-100 border border-slate-200 rounded-lg">
       <% @memberships.each do |membership| %>
@@ -72,9 +94,9 @@
     </div>
   </section>
 
-  <%= render "catalog_section", heading: "Event types", items: @event_types, new_item: @new_event_type,
+  <%= render "account_users/catalog_section", frame_id: "event_types_frame", heading: "Event types", items: @event_types, new_item: @new_event_type,
         add_label: "New event type", item_url: ->(item) { event_type_path(item) }, collection_url: event_types_path %>
 
-  <%= render "catalog_section", heading: "Materials & equipment", items: @material_items, new_item: @new_material_item,
+  <%= render "account_users/catalog_section", frame_id: "material_items_frame", heading: "Materials & equipment", items: @material_items, new_item: @new_material_item,
         add_label: "New material or equipment item", item_url: ->(item) { material_item_path(item) }, collection_url: material_items_path %>
 </div>

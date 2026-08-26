@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   post "settings/reset", to: "settings#reset", as: :reset_settings
 
   resources :liaisons
+  resource :account, only: [:update]
   resources :accounts, only: [:new, :create]
   resources :account_users, only: [:index, :create, :update, :destroy]
   resources :event_types, only: [:create, :update, :destroy]

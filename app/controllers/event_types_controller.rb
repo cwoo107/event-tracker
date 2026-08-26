@@ -1,14 +1,15 @@
 class EventTypesController < ApplicationController
-  before_action :require_admin!
+  include AccountSettingsScoped
+
   before_action :set_event_type, only: %i[update destroy]
 
   def create
-    event_type = Current.account.event_types.new(event_type_params)
+    @new_event_type = Current.account.event_types.new(event_type_params)
 
-    if event_type.save
-      redirect_to account_users_path, notice: "#{event_type.name} added."
+    if @new_event_type.save
+      redirect_to account_users_path, notice: "#{@new_event_type.name} added."
     else
-      redirect_to account_users_path, alert: event_type.errors.full_messages.to_sentence
+      render_account_settings_error
     end
   end
 
@@ -21,7 +22,9 @@ class EventTypesController < ApplicationController
 
   def destroy
     if @event_type.events.any?
-      redirect_to account_users_path, alert: "#{@event_type.name} is used by existing events - deactivate it instead."
+      @new_event_type = EventType.new
+      @new_event_type.errors.add(:base, "#{@event_type.name} is used by existing events - deactivate it instead.")
+      render_account_settings_error
     else
       @event_type.destroy
       redirect_to account_users_path, notice: "#{@event_type.name} removed."
@@ -32,12 +35,6 @@ class EventTypesController < ApplicationController
 
   def set_event_type
     @event_type = Current.account.event_types.find(params[:id])
-  end
-
-  def require_admin!
-    return if Current.admin?
-
-    redirect_to root_path, alert: "Only admins can do that."
   end
 
   def event_type_params

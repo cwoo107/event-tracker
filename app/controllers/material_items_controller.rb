@@ -1,14 +1,15 @@
 class MaterialItemsController < ApplicationController
-  before_action :require_admin!
+  include AccountSettingsScoped
+
   before_action :set_material_item, only: %i[update destroy]
 
   def create
-    material_item = Current.account.material_items.new(material_item_params)
+    @new_material_item = Current.account.material_items.new(material_item_params)
 
-    if material_item.save
-      redirect_to account_users_path, notice: "#{material_item.name} added."
+    if @new_material_item.save
+      redirect_to account_users_path, notice: "#{@new_material_item.name} added."
     else
-      redirect_to account_users_path, alert: material_item.errors.full_messages.to_sentence
+      render_account_settings_error
     end
   end
 
@@ -19,7 +20,9 @@ class MaterialItemsController < ApplicationController
 
   def destroy
     if @material_item.event_material_items.any?
-      redirect_to account_users_path, alert: "#{@material_item.name} is used by existing events - deactivate it instead."
+      @new_material_item = MaterialItem.new
+      @new_material_item.errors.add(:base, "#{@material_item.name} is used by existing events - deactivate it instead.")
+      render_account_settings_error
     else
       @material_item.destroy
       redirect_to account_users_path, notice: "#{@material_item.name} removed."
@@ -30,12 +33,6 @@ class MaterialItemsController < ApplicationController
 
   def set_material_item
     @material_item = Current.account.material_items.find(params[:id])
-  end
-
-  def require_admin!
-    return if Current.admin?
-
-    redirect_to root_path, alert: "Only admins can do that."
   end
 
   def material_item_params

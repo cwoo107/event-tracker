@@ -1,11 +1,9 @@
 class AccountUsersController < ApplicationController
-  MANAGEABLE_ROLES = %w[admin coordinator].freeze
-
-  before_action :require_admin!
+  include AccountSettingsScoped
 
   def index
     @new_user = User.new
-    load_index_locals
+    load_account_settings_locals
   end
 
   # Inviting an email that already belongs to a User attaches a new
@@ -84,10 +82,10 @@ class AccountUsersController < ApplicationController
 
     if @new_user.save
       @new_user.account_memberships.create!(account: Current.account, role: role)
-      PasswordsMailer.reset(@new_user).deliver_later
+      PasswordsMailer.reset(@new_user, account: Current.account).deliver_later
       redirect_to account_users_path, notice: "#{@new_user.name} added - a password setup email has been sent."
     else
-      load_index_locals
+      load_account_settings_locals
       render :index, status: :unprocessable_entity
     end
   end
@@ -95,30 +93,8 @@ class AccountUsersController < ApplicationController
   def render_create_error(attribute, message)
     @new_user = User.new(user_params)
     @new_user.errors.add(attribute, message)
-    load_index_locals
+    load_account_settings_locals
     render :index, status: :unprocessable_entity
-  end
-
-  def require_admin!
-    return if Current.admin?
-
-    redirect_to root_path, alert: "Only admins can do that."
-  end
-
-  # Scoped to admin/coordinator roles specifically, not just
-  # Current.account.account_memberships, so this screen can never reach
-  # (list, add, or remove) a liaison's login - those are managed entirely
-  # through Liaisons.
-  def manageable_memberships
-    Current.account.account_memberships.where(role: MANAGEABLE_ROLES).includes(:user).order("users.name")
-  end
-
-  def load_index_locals
-    @memberships = manageable_memberships
-    @event_types = Current.account.event_types.order(:name)
-    @new_event_type = EventType.new
-    @material_items = Current.account.material_items.order(:name)
-    @new_material_item = MaterialItem.new
   end
 
   def user_params
