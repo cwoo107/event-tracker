@@ -45,7 +45,7 @@ Rails.application.config.to_prepare do
     Rails.application.config.action_mailer.raise_delivery_errors = true
     Rails.application.config.action_mailer.smtp_settings = {
       address: "smtp.mailgun.org",
-      port: 587,
+      port: 2525,
       domain: AppCredentials.mailgun_domain,
       user_name: AppCredentials.mailgun_smtp_username,
       password: AppCredentials.mailgun_smtp_password,
