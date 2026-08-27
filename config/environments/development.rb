@@ -45,15 +45,9 @@ Rails.application.configure do
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
 
-  # Set localhost to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
-
-  # Without this, image_tag in mailer views (see layouts/mailer.html.erb)
-  # emits a relative /assets/... path - fine for pages the app serves,
-  # but letter_opener renders the email as a static HTML file straight
-  # from tmp/letter_opener, with no Rails app in the loop to resolve a
-  # relative URL against. Broken image icon instead of the logo.
-  config.action_mailer.asset_host = "http://localhost:3000"
+  # default_url_options and asset_host for mailers are set centrally in
+  # config/initializers/action_mailer.rb (falls back to localhost:3000
+  # here since APP_HOST isn't set in development).
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

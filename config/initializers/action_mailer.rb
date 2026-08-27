@@ -34,10 +34,21 @@
 #   app:
 #     host: events.yourdomain.com
 Rails.application.config.to_prepare do
+  mailer_host = AppCredentials.app_host || "localhost:3000"
+  mailer_protocol = Rails.env.production? ? "https" : "http"
+
   Rails.application.config.action_mailer.default_url_options = {
-    host: AppCredentials.app_host || "localhost:3000",
-    protocol: Rails.env.production? ? "https" : "http"
+    host: mailer_host,
+    protocol: mailer_protocol
   }
+
+  # image_tag in mailer views (see layouts/mailer.html.erb) needs an
+  # absolute URL - without asset_host it emits a relative /assets/...
+  # path, which is fine for pages the app serves but breaks images in
+  # the actual email (broken icon in every client, and in letter_opener
+  # locally since it renders to a static HTML file with no Rails app in
+  # the loop to resolve a relative URL against).
+  Rails.application.config.action_mailer.asset_host = "#{mailer_protocol}://#{mailer_host}"
 
   if Rails.env.production?
     Rails.application.config.action_mailer.delivery_method = :smtp
