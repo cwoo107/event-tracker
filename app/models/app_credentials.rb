@@ -8,8 +8,25 @@ module AppCredentials
     ENV["MAPBOX_ACCESS_TOKEN"].presence || Rails.application.credentials.dig(:mapbox, :access_token)
   end
 
+  DOMAIN_PATTERN = /\A[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+\z/i
+
+  # Sanitized so this is always safe to embed in a From/EHLO domain even
+  # if the raw env var/credential has stray whitespace or was mistakenly
+  # set to a full address (e.g. postmaster@mg.example.com) instead of a
+  # bare domain - either broke SMTP with "cannot parse from address".
   def self.mailgun_domain
-    ENV["MAILGUN_SMTP_DOMAIN"].presence || Rails.application.credentials.dig(:mailgun, :domain)
+    raw = ENV["MAILGUN_SMTP_DOMAIN"].presence || Rails.application.credentials.dig(:mailgun, :domain)
+    return nil unless raw
+
+    domain = raw.to_s.strip
+    domain = domain.split("@").last if domain.include?("@")
+
+    unless domain.match?(DOMAIN_PATTERN)
+      Rails.logger.warn("AppCredentials.mailgun_domain: #{raw.inspect} doesn't look like a valid domain (sanitized to #{domain.inspect}) - ignoring it")
+      return nil
+    end
+
+    domain
   end
 
   def self.mailgun_smtp_username

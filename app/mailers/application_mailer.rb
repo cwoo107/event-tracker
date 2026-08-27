@@ -1,4 +1,7 @@
 class ApplicationMailer < ActionMailer::Base
+  # AppCredentials.mailgun_domain sanitizes/validates the raw env var,
+  # so this falls back to the hardcoded domain only if MAILGUN_SMTP_DOMAIN
+  # is unset or unusable - never sends an invalid From address again.
   MAILGUN_DOMAIN = AppCredentials.mailgun_domain || "usanmarketing.org"
 
   default from: "Event Tracker <notifications@#{MAILGUN_DOMAIN}>"

@@ -7,7 +7,7 @@ Rails.application.routes.draw do
   resource :registration, only: [:new, :create]
   resources :passwords, param: :token, only: [:new, :create, :edit, :update]
 
-  root "events#map"
+  root "pages#home"
   get "map", to: "events#map", as: :map
 
   resources :events, only: [:show, :new, :create, :edit, :update] do
