@@ -1,6 +1,6 @@
 <% content_for :title, "Settings | USAN Event Liaison Tracker" %>
 
-<div class="max-w-6xl mx-auto px-6 py-10">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
   <h1 class="text-xl font-semibold text-slate-900">Assignment engine</h1>
   <p class="text-[13px] text-slate-500 mt-1 mb-8">
     Weights are relative - the engine scores every available liaison against each open event and proposes the
@@ -44,7 +44,7 @@
 
     <section>
       <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Calendar basis</h2>
-      <div class="grid grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="border border-slate-200 rounded-lg p-3">
           <label class="text-[11px] text-slate-400 block mb-1">Work weeks</label>
           <input type="number" name="work_weeks_per_year" value="<%= @form.work_weeks_per_year %>" min="1" max="52"

@@ -1,7 +1,7 @@
 <% content_for :title, "Calendar | USAN Event Liaison Tracker" %>
 
-<div class="max-w-8xl mx-auto px-6 py-8">
-  <div class="flex items-center justify-between mb-1">
+<div class="max-w-8xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-1">
     <div class="flex items-center gap-3">
       <%= link_to calendar_path(year: @calendar.previous_month.year, month: @calendar.previous_month.month),
             class: "w-8 h-8 flex items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50",
@@ -16,7 +16,7 @@
       <% end %>
     </div>
 
-    <div class="flex items-center gap-3 text-[12px] text-slate-500 flex-wrap justify-end">
+    <div class="flex items-center gap-3 text-[12px] text-slate-500 flex-wrap sm:justify-end">
       <% @liaisons.each do |liaison| %>
         <div class="flex items-center gap-1">
           <span class="w-2 h-2 rounded-full flex-none" style="background: <%= liaison.color %>"></span><%= liaison.name.split.first %>
@@ -29,34 +29,35 @@
     <%= @calendar.filled_slots %> of <%= @calendar.total_slots %> weekly slots filled
   </p>
 
-  <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));"
-       class="border border-slate-200 rounded-lg overflow-hidden bg-white">
-    <% %w[Sun Mon Tue Wed Thu Fri Sat].each do |day| %>
-      <div class="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b border-r border-slate-100 bg-slate-50">
-        <%= day %>
-      </div>
-    <% end %>
-
-    <% @calendar.weeks.each do |week| %>
-      <% week.each do |cell| %>
-        <div style="min-height: 96px;" class="p-1.5 border-b border-r border-slate-100 <%= 'bg-slate-50/60' unless cell.in_month %>">
-          <p class="text-[11px] mb-1 <%= cell.in_month ? 'text-slate-500' : 'text-slate-300' %>"><%= cell.date.day %></p>
-          <div class="space-y-1">
-            <% cell.events.first(3).each do |event| %>
-              <% liaison = event.liaisons.first %>
-              <% style = marker_style(event) %>
-              <%= link_to event_path(event), title: event.title,
-                    class: "block text-[10px] leading-tight px-1.5 py-0.5 rounded truncate #{style.text_dark ? 'text-slate-700' : 'text-white'}",
-                    style: "background: #{style.fill}; border: 1.5px solid #{style.border};" do %>
-                <%= liaison ? "#{liaison.name.split.first} &mdash; #{event.city}".html_safe : event.city %>
-              <% end %>
-            <% end %>
-            <% if cell.events.size > 3 %>
-              <p class="text-[10px] text-slate-400">+<%= cell.events.size - 3 %> more</p>
-            <% end %>
-          </div>
+  <div class="overflow-x-auto overflow-hidden border border-slate-200 rounded-lg bg-white">
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));" class="min-w-[700px]">
+      <% %w[Sun Mon Tue Wed Thu Fri Sat].each do |day| %>
+        <div class="px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b border-r border-slate-100 bg-slate-50">
+          <%= day %>
         </div>
       <% end %>
-    <% end %>
+
+      <% @calendar.weeks.each do |week| %>
+        <% week.each do |cell| %>
+          <div style="min-height: 96px;" class="p-1.5 border-b border-r border-slate-100 <%= 'bg-slate-50/60' unless cell.in_month %>">
+            <p class="text-[11px] mb-1 <%= cell.in_month ? 'text-slate-500' : 'text-slate-300' %>"><%= cell.date.day %></p>
+            <div class="space-y-1">
+              <% cell.events.first(3).each do |event| %>
+                <% liaison = event.liaisons.first %>
+                <% style = marker_style(event) %>
+                <%= link_to event_path(event), title: event.title,
+                      class: "block text-[10px] leading-tight px-1.5 py-0.5 rounded truncate #{style.text_dark ? 'text-slate-700' : 'text-white'}",
+                      style: "background: #{style.fill}; border: 1.5px solid #{style.border};" do %>
+                  <%= liaison ? "#{liaison.name.split.first} &mdash; #{event.city}".html_safe : event.city %>
+                <% end %>
+              <% end %>
+              <% if cell.events.size > 3 %>
+                <p class="text-[10px] text-slate-400">+<%= cell.events.size - 3 %> more</p>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
   </div>
 </div>

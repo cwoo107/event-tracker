@@ -1,6 +1,6 @@
 <% content_for :title, "Account settings | USAN Event Liaison Tracker" %>
 
-<div class="max-w-6xl mx-auto px-6 py-10">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
   <h1 class="text-xl font-semibold text-slate-900">Account settings</h1>
   <p class="text-[13px] text-slate-500 mt-1 mb-8">
     Everyone here can sign in and manage this account's events and liaisons. Field liaisons are added from the
@@ -34,7 +34,7 @@
     <div class="divide-y divide-slate-100 border border-slate-200 rounded-lg">
       <% @memberships.each do |membership| %>
         <% user = membership.user %>
-        <div class="flex items-center gap-3 px-4 py-3">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
           <div class="w-8 h-8 rounded-full bg-brand-700 text-white text-[12px] font-semibold flex items-center justify-center flex-none">
             <%= user.initials %>
           </div>
@@ -73,7 +73,7 @@
         <% if @new_user.errors.any? %>
           <p class="text-[13px] text-rose-600"><%= @new_user.errors.full_messages.to_sentence %></p>
         <% end %>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <%= f.label :name, class: form_label_class %>
             <%= f.text_field :name, class: form_field_class %>

@@ -1,11 +1,15 @@
 <% content_for :title, "#{@liaison.name} | USAN Event Liaison Tracker" %>
 
-<div style="display: flex; height: calc(100vh - 64px);">
-  <aside style="width: 300px; flex: 0 0 auto; display: flex; flex-direction: column;" class="border-r border-slate-200 bg-white">
+<div class="flex flex-col md:flex-row" style="height: calc(100vh - 64px);">
+  <aside class="hidden md:flex flex-col w-full md:w-[300px] md:flex-none border-r border-slate-200 bg-white">
     <%= render "liaisons/sidebar" %>
   </aside>
 
-  <main style="flex: 1 1 0%; min-width: 0; overflow-y: auto;">
+  <main class="flex-1 min-w-0 overflow-y-auto">
+    <%= link_to liaisons_path, class: "md:hidden flex items-center gap-1.5 px-4 pt-4 text-[13px] font-medium text-brand-700 hover:text-brand-800" do %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      All liaisons
+    <% end %>
     <%= render "liaisons/profile", liaison: @liaison, risk: @risk_assessment.for(@liaison),
           average_weekend: @risk_assessment.average_weekend_count %>
   </main>

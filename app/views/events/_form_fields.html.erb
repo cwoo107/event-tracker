@@ -6,7 +6,7 @@
     <%= f.text_field :title, class: form_field_class, placeholder: "Sac Valley Ag Field Day" %>
   </div>
 
-  <div class="grid grid-cols-2 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div>
       <%= f.label :event_type_id, "Event type", class: form_label_class %>
       <%= f.select :event_type_id, Current.account.event_types.active.order(:name).pluck(:name, :id),
@@ -27,7 +27,7 @@
 <section class="space-y-4">
   <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Schedule</h2>
 
-  <div class="grid grid-cols-2 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div>
       <%= f.label :starts_at, "Starts", class: form_label_class %>
       <%= f.datetime_field :starts_at, class: form_field_class %>
@@ -38,7 +38,7 @@
     </div>
   </div>
 
-  <div class="grid grid-cols-2 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div>
       <%= f.label :prep_minutes, "Prep (minutes)", class: form_label_class %>
       <%= f.number_field :prep_minutes, class: form_field_class, min: 0 %>
@@ -76,7 +76,7 @@
     Optional - leave blank to default to you as the contact and your organization.
   </p>
 
-  <div class="grid grid-cols-2 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div>
       <%= f.label :requester_organization, "Organization", class: form_label_class %>
       <%= f.text_field :requester_organization, class: form_field_class %>
@@ -87,7 +87,7 @@
     </div>
   </div>
 
-  <div class="grid grid-cols-2 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div>
       <%= f.label :requester_email, "Contact email", class: form_label_class %>
       <%= f.email_field :requester_email, class: form_field_class %>

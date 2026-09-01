@@ -1,4 +1,4 @@
-<div class="p-6 max-w-4xl">
+<div class="p-4 sm:p-6 max-w-4xl">
   <% if (hold = liaison.active_load_hold) %>
     <div class="mb-5 rounded-lg bg-lime-50 border-l-2 border-lime-500 px-4 py-3 text-[13px] text-brand-900">
       Load hold active. The engine won't offer <%= liaison.name.split.first %>
@@ -9,7 +9,7 @@
     </div>
   <% end %>
 
-  <div class="flex items-start justify-between mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
     <div class="flex items-center gap-4">
       <div class="w-14 h-14 rounded-full flex items-center justify-center text-white text-[16px] font-semibold flex-none"
            style="background: <%= liaison.color %>">
@@ -30,11 +30,11 @@
         <% end %>
       </div>
     </div>
-    <div class="text-right flex-none">
+    <div class="text-left sm:text-right flex-none">
       <p class="text-2xl font-semibold text-slate-900"><%= liaison.ytd_event_count %></p>
       <div class="mt-1"><%= risk_badge(risk) %></div>
       <% if Current.admin? || Current.liaison == liaison %>
-        <div class="flex items-center justify-end gap-3 mt-2">
+        <div class="flex items-center justify-start sm:justify-end gap-3 mt-2">
           <%= link_to "Edit", edit_liaison_path(liaison), class: "text-[12px] font-medium text-brand-700 hover:text-brand-800" %>
           <% if Current.admin? %>
             <% if liaison.destroyable? %>
@@ -50,7 +50,7 @@
     </div>
   </div>
 
-  <div class="grid grid-cols-4 gap-3 mb-8">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
     <div class="border border-slate-200 rounded-lg p-3 bg-white">
       <p class="text-[11px] text-slate-400">This week</p>
       <p class="text-[18px] font-semibold text-slate-900">
@@ -74,7 +74,7 @@
     </div>
   </div>
 
-  <div class="grid grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div>
       <h2 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Upcoming assignments</h2>
       <div class="border border-slate-200 rounded-lg bg-white divide-y divide-slate-100">

@@ -1,36 +1,68 @@
 <% content_for :title, "Map | USAN Event Liaison Tracker" %>
 
-<div style="display: flex; height: calc(100vh - 64px);" data-controller="selection">
-  <aside style="width: 340px; flex: 0 0 auto; display: flex; flex-direction: column;"
-         class="border-r border-slate-200 bg-white">
+<% mobile_default_tab = @selected_event.present? ? "map" : "list" %>
+
+<div class="flex flex-col md:flex-row" style="height: calc(100vh - 64px);" data-controller="selection mobile-tabs">
+  <div class="md:hidden flex border-b border-slate-200 bg-white text-[13px] font-medium">
+    <button type="button" data-mobile-tabs-target="tabButton" data-tab="list" data-action="click->mobile-tabs#show"
+            class="flex-1 py-3 text-center border-b-2 <%= mobile_default_tab == "list" ? "border-brand-700 text-brand-700" : "border-transparent text-slate-500" %>">
+      List
+    </button>
+    <button type="button" data-mobile-tabs-target="tabButton" data-tab="map" data-action="click->mobile-tabs#show"
+            class="flex-1 py-3 text-center border-b-2 <%= mobile_default_tab == "map" ? "border-brand-700 text-brand-700" : "border-transparent text-slate-500" %>">
+      Map
+    </button>
+  </div>
+
+  <aside data-mobile-tabs-target="pane" data-tab="list"
+         class="<%= "hidden" unless mobile_default_tab == "list" %> flex md:flex flex-1 md:flex-none flex-col w-full md:w-[340px] border-r border-slate-200 bg-white">
     <%= turbo_frame_tag "sidebar_lists", style: "display: contents;" do %>
       <%= render "events/sidebar" %>
     <% end %>
   </aside>
 
-  <main style="flex: 1 1 0%; min-width: 0; position: relative; overflow: hidden; background: #eef2ef;">
-    <%= render "events/map_canvas" %>
-  </main>
+  <%#
+    On mobile this single pane holds both the map and the event detail,
+    Apple/Google-Maps style: the map fills the whole pane and the detail
+    frame overlays it as a draggable bottom sheet (bottom_sheet_controller.js)
+    instead of getting its own tab. At md+, `md:` classes throughout this
+    block put it back to the original static 3-column layout (list | map |
+    380px detail rail) - see the bottom-sheet aside below.
+  %>
+  <div data-mobile-tabs-target="pane" data-tab="map" data-controller="bottom-sheet"
+       class="<%= "hidden" unless mobile_default_tab == "map" %> md:flex flex-1 md:flex-row relative overflow-hidden">
+    <main class="absolute inset-0 md:static md:flex-1 min-w-0 overflow-hidden bg-[#eef2ef]">
+      <%= render "events/map_canvas" %>
+    </main>
 
-  <aside style="width: 380px; flex: 0 0 auto; overflow-y: auto;" class="border-l border-slate-200 bg-white">
-    <%= turbo_frame_tag "event_detail" do %>
-      <%
-        # Turbo Frame navigation only swaps a frame's inner content, never
-        # the <turbo-frame> tag's own attributes - so this data holder has
-        # to live inside the frame's content (read by mapbox_controller.js
-        # on turbo:frame-load to draw/clear the route line), not on the
-        # turbo_frame_tag call itself.
-      %>
-      <div data-route-geometry="<%= @selected_event&.drive_route_geometry.to_json %>" hidden></div>
-      <% if @editing_event %>
-        <%= render "events/edit_form", event: @selected_event %>
-      <% elsif @viewing_candidates %>
-        <%= render "events/candidates", event: @selected_event, ranking: @ranking, weights: @weights, mode: @candidate_mode %>
-      <% elsif @selected_event %>
-        <%= render "events/detail", event: @selected_event %>
-      <% else %>
-        <%= render "events/detail_empty" %>
+    <aside data-bottom-sheet-target="sheet"
+           data-bottom-sheet-initial-value="<%= @selected_event.present? ? "half" : "hidden" %>"
+           class="<%= @selected_event.present? ? "h-[50%]" : "hidden" %> md:block absolute inset-x-0 bottom-0 md:static md:w-[380px] md:h-auto md:flex-none overflow-y-auto rounded-t-2xl md:rounded-none shadow-[0_-8px_24px_rgba(15,23,42,0.15)] md:shadow-none border-t md:border-t-0 md:border-l border-slate-200 bg-white">
+      <div data-bottom-sheet-target="handle"
+           data-action="pointerdown->bottom-sheet#dragStart pointermove->bottom-sheet#dragMove pointerup->bottom-sheet#dragEnd pointercancel->bottom-sheet#dragEnd"
+           class="md:hidden flex justify-center py-2 touch-none cursor-grab active:cursor-grabbing">
+        <span class="w-10 h-1.5 rounded-full bg-slate-300"></span>
+      </div>
+
+      <%= turbo_frame_tag "event_detail", data: { action: "turbo:frame-load->mobile-tabs#showMap turbo:frame-load->bottom-sheet#syncFrame" } do %>
+        <%
+          # Turbo Frame navigation only swaps a frame's inner content, never
+          # the <turbo-frame> tag's own attributes - so this data holder has
+          # to live inside the frame's content (read by mapbox_controller.js
+          # on turbo:frame-load to draw/clear the route line), not on the
+          # turbo_frame_tag call itself.
+        %>
+        <div data-route-geometry="<%= @selected_event&.drive_route_geometry.to_json %>" hidden></div>
+        <% if @editing_event %>
+          <%= render "events/edit_form", event: @selected_event %>
+        <% elsif @viewing_candidates %>
+          <%= render "events/candidates", event: @selected_event, ranking: @ranking, weights: @weights, mode: @candidate_mode %>
+        <% elsif @selected_event %>
+          <%= render "events/detail", event: @selected_event %>
+        <% else %>
+          <%= render "events/detail_empty" %>
+        <% end %>
       <% end %>
-    <% end %>
-  </aside>
+    </aside>
+  </div>
 </div>
