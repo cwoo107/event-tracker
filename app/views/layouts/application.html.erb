@@ -2,7 +2,9 @@
 <html>
   <head>
     <title><%= content_for(:title) || "USAN Event Liaison Tracker" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <%= stylesheet_link_tag :ruby_native %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -27,9 +29,13 @@
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body class="bg-slate-50 text-slate-900 antialiased text-[14px] font-sans">
+  <body class="native-inset bg-slate-50 text-slate-900 antialiased text-[14px] font-sans"
+        style="--app-header-height: <%= native_app? ? "0px" : "64px" %>;">
   <% if Current.user.present? %>
-    <%= render "layouts/nav" %>
+
+    <%= render "layouts/nav" unless native_app? %>
+    <%= native_tabs_tag %>
+
     <% end %>
     <%= yield %>
   </body>

@@ -1,6 +1,7 @@
 <% content_for :title, "#{@liaison.name} | USAN Event Liaison Tracker" %>
+<%= native_navbar_tag(@liaison.name) %>
 
-<div class="flex flex-col md:flex-row" style="height: calc(100vh - 64px);">
+<div class="flex flex-col md:flex-row" style="height: calc(100vh - var(--app-header-height));">
   <aside class="hidden md:flex flex-col w-full md:w-[300px] md:flex-none border-r border-slate-200 bg-white">
     <%= render "liaisons/sidebar" %>
   </aside>
